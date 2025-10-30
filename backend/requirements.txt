@@ -28,6 +28,7 @@ google-auth-oauthlib==1.2.0
 python-dotenv==1.0.0
 openpyxl==3.1.2
 cryptography==41.0.7
+pydantic==2.0.3
 
 # CORS 설정 (React 연동용)
 fastapi-cors==0.0.6
