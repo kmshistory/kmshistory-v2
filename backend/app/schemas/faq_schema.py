@@ -28,6 +28,25 @@ class FAQCategoryResponse(FAQCategoryBase):
 
 # ---------- FAQ ----------
 
+class FAQBase(BaseModel):
+    question: str = Field(..., min_length=1, max_length=500, description="질문")
+    answer: str = Field(..., description="답변")
+    category_id: Optional[int] = Field(None, description="카테고리 ID")
+    order: int = Field(default=0, description="정렬 순서")
+    is_active: bool = Field(default=True, description="활성 상태")
+
+class FAQCreate(FAQBase):
+    """FAQ 생성 스키마"""
+    pass
+
+class FAQUpdate(BaseModel):
+    """FAQ 수정 스키마"""
+    question: Optional[str] = Field(None, min_length=1, max_length=500, description="질문")
+    answer: Optional[str] = Field(None, description="답변")
+    category_id: Optional[int] = Field(None, description="카테고리 ID")
+    order: Optional[int] = Field(None, description="정렬 순서")
+    is_active: Optional[bool] = Field(None, description="활성 상태")
+
 class FAQResponse(BaseModel):
     id: int
     question: str

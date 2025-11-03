@@ -1,12 +1,10 @@
 # app/schemas/common.py
-from typing import Generic, List, TypeVar
+from typing import Generic, List, TypeVar, Optional
 from pydantic import BaseModel
-from pydantic.generics import GenericModel
-from typing import Optional
 
 T = TypeVar("T")
 
-class PageResponse(GenericModel, Generic[T]):
+class PageResponse(BaseModel, Generic[T]):
     items: List[T]
     total: int
     page: int

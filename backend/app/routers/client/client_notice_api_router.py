@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.notice import NoticeResponse, NoticePageResponse, NoticeCategoryResponse
+from app.schemas.notice_schema import NoticeResponse, NoticePageResponse, NoticeCategoryResponse
 from app.services.notice_service import (
     client_list_notices_service,
     client_get_notice_service,

@@ -28,27 +28,16 @@ from .admin import (
 )
 
 # ✅ Auth & User (공통)
-from . import (
-    auth_api_router,
-    auth_template_router,
-    mypage_api_router,
-    mypage_template_router,
-    user_member_api_router,
-    user_member_template_router,
-    seo_router,
-)
+from .client.auth_api_router import router as auth_api_router
+from .client.auth_template_router import router as auth_template_router
+from .client.mypage_api_router import router as mypage_api_router
+from .client.mypage_template_router import router as mypage_template_router
+from .client.seo_router import router as seo_router
 
 # ✅ Client (일반 사용자)
-from .client import (
-    client_home_router,
-    client_notice_router,
-)
-
-# ✅ Public Home (루트 경로용)
-from . import (
-    home_api_router,
-    home_template_router,
-)
+from .client.client_notice_api_router import router as client_notice_router
+from .client.home_template_router import router as client_home_router
+from .client.home_api_router import router as home_api_router
 
 # ===============================
 # 🔗 Export

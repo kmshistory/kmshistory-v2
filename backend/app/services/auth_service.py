@@ -1,11 +1,13 @@
 # app/services/auth_service.py
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Request
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from app.models import User, EmailVerification as EmailVerificationModel, Notification
 from app.utils.auth import get_password_hash, verify_password, create_access_token
 from app.utils.auth import set_auth_cookie, clear_auth_cookie
 import random, string, os, jwt
+from app.services.email_service import send_verification_email, send_password_reset_email
+from app.config import settings
 
 # ===== 수동 검증 유틸 =====
 def _validate_password_rules(pw: str):
@@ -130,43 +132,82 @@ def logout_service(response):
     clear_auth_cookie(response)
     return {"message": "로그아웃 되었습니다."}
 
-# ===== 이메일 인증 코드 발송/검증 =====
+# ===== 이메일 인증 코드 생성 =====
 def _gen_code():
     return ''.join(random.choices(string.digits, k=6))
 
-async def send_verification_code_service(request, db: Session):
+# ===== 인증 코드 발송 =====
+async def send_verification_code_service(request: Request, db: Session):
     data = await request.json()
     email = data.get("email")
     if not email:
         raise HTTPException(400, "이메일은 필수입니다.")
 
-    existing = db.query(User).filter(User.email == email, User.is_active == True, User.is_email_verified == True).first()
+    # 이미 가입된 이메일인지 확인
+    existing = db.query(User).filter(
+        User.email == email,
+        User.is_active == True,
+        User.is_email_verified == True
+    ).first()
     if existing:
         raise HTTPException(409, "이미 가입된 이메일입니다.")
 
+    # 인증 코드 생성
     code = _gen_code()
-    ev = db.query(EmailVerificationModel).filter(EmailVerificationModel.email == email).first()
     expires = datetime.now() + timedelta(minutes=3)
-    if ev:
-        ev.verification_code = code; ev.expires_at = expires
-    else:
-        ev = EmailVerificationModel(email=email, verification_code=code, expires_at=expires)
-        db.add(ev)
-    db.commit()
-    # 메일 발송 로직(별도 서비스)이 있으면 호출
-    return {"message":"인증 코드가 발송되었습니다."}
 
-async def verify_email_code_service(request, db: Session):
+    ev = db.query(EmailVerificationModel).filter(
+        EmailVerificationModel.email == email
+    ).first()
+
+    if ev:
+        ev.verification_code = code
+        ev.expires_at = expires
+    else:
+        ev = EmailVerificationModel(
+            email=email,
+            verification_code=code,
+            expires_at=expires
+        )
+        db.add(ev)
+
+    db.commit()
+
+    # ✅ 실제 메일 발송 로직 연결
+    try:
+        await send_verification_email(email, code)
+    except Exception as e:
+        raise HTTPException(500, f"이메일 발송 중 오류 발생: {str(e)}")
+
+    return {"message": "인증 코드가 이메일로 발송되었습니다."}
+
+
+# ===== 인증 코드 검증 =====
+async def verify_email_code_service(request: Request, db: Session):
     data = await request.json()
-    email = data.get("email"); code = data.get("code")
+    email = data.get("email")
+    code = data.get("code")
+
     if not email or not code:
         raise HTTPException(400, "이메일/코드는 필수입니다.")
-    ev = db.query(EmailVerificationModel).filter(EmailVerificationModel.email == email).first()
-    if not ev: raise HTTPException(404, "인증 정보를 찾을 수 없습니다.")
-    if ev.verification_code != code: raise HTTPException(400, "인증 코드가 일치하지 않습니다.")
-    if ev.expires_at < datetime.now(): raise HTTPException(400, "인증 코드가 만료되었습니다.")
-    db.delete(ev); db.commit()
-    return {"message":"이메일 인증이 완료되었습니다."}
+
+    ev = db.query(EmailVerificationModel).filter(
+        EmailVerificationModel.email == email
+    ).first()
+
+    if not ev:
+        raise HTTPException(404, "인증 정보를 찾을 수 없습니다.")
+    if ev.verification_code != code:
+        raise HTTPException(400, "인증 코드가 일치하지 않습니다.")
+    if ev.expires_at < datetime.now():
+        raise HTTPException(400, "인증 코드가 만료되었습니다.")
+
+    # 인증 성공 → 기록 삭제
+    db.delete(ev)
+    db.commit()
+
+    return {"message": "이메일 인증이 완료되었습니다."}
+
 
 async def check_email_duplicate_service(request, db: Session):
     """회원가입 전 이메일 중복 확인"""
@@ -227,31 +268,45 @@ async def check_nickname_duplicate_service(request, db: Session):
 
 
 
-# ===== 비밀번호 변경/재설정 =====
+# ===== 비밀번호 변경 =====
 async def change_password_service(request, db: Session, current_user: User):
+    """로그인 중 사용자의 비밀번호 변경"""
     data = await request.json()
     current = data.get("current_password")
     new = data.get("new_password")
+
     if not current or not new:
         raise HTTPException(400, "현재/새 비밀번호는 필수입니다.")
     if not verify_password(current, current_user.password_hash):
         raise HTTPException(401, "현재 비밀번호가 일치하지 않습니다.")
     _validate_password_rules(new)
+
     current_user.password_hash = get_password_hash(new)
     current_user.updated_at = datetime.now()
-    db.commit(); db.refresh(current_user)
-    return {"message":"비밀번호가 변경되었습니다."}
+    db.commit()
+    db.refresh(current_user)
 
+    return {"message": "비밀번호가 변경되었습니다."}
+
+
+# ===== 비밀번호 재설정 토큰 생성/검증 =====
 def generate_password_reset_token(email: str) -> str:
-    payload = {'email': email, 'type': 'password_reset', 'exp': datetime.utcnow() + timedelta(minutes=30)}
-    secret_key = os.getenv('JWT_SECRET_KEY','your-secret-key-change-in-production')
-    return jwt.encode(payload, secret_key, algorithm='HS256')
+    """JWT 기반 비밀번호 재설정 토큰 생성"""
+    payload = {
+        "email": email,
+        "type": "password_reset",
+        "exp": datetime.utcnow() + timedelta(minutes=30),
+    }
+    secret_key = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+    return jwt.encode(payload, secret_key, algorithm="HS256")
+
 
 def verify_password_reset_token(token: str) -> dict:
-    secret_key = os.getenv('JWT_SECRET_KEY','your-secret-key-change-in-production')
+    """비밀번호 재설정 토큰 검증"""
+    secret_key = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
     try:
-        payload = jwt.decode(token, secret_key, algorithms=['HS256'])
-        if payload.get('type') != 'password_reset':
+        payload = jwt.decode(token, secret_key, algorithms=["HS256"])
+        if payload.get("type") != "password_reset":
             raise HTTPException(400, "잘못된 토큰입니다.")
         return payload
     except jwt.ExpiredSignatureError:
@@ -259,31 +314,58 @@ def verify_password_reset_token(token: str) -> dict:
     except jwt.InvalidTokenError:
         raise HTTPException(400, "잘못된 토큰입니다.")
 
-async def password_reset_request_service(request, db: Session):
+
+# ===== 비밀번호 재설정 요청 =====
+async def password_reset_request_service(request: Request, db: Session):
+    """비밀번호 재설정 메일 발송"""
     data = await request.json()
     email = data.get("email")
+
     if not email:
         raise HTTPException(400, "이메일은 필수입니다.")
+
     user = db.query(User).filter(User.email == email, User.is_active == True).first()
     if not user:
-        # 보안상 200 응답으로 위장해도 되지만, 여기선 명시적으로 처리
         raise HTTPException(404, "사용자를 찾을 수 없습니다.")
-    token = generate_password_reset_token(email)
-    # 이메일 발송 로직(별도) 호출
-    return {"message":"비밀번호 재설정 메일이 발송되었습니다.", "token_demo": token}  # 실제 운영에선 토큰 반환 X
 
-async def password_reset_confirm_service(request, db: Session):
+    # ✅ 토큰 생성
+    token = generate_password_reset_token(email)
+
+    # ✅ 프론트엔드 비밀번호 재설정 페이지 링크 구성
+    reset_link = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+
+    # ✅ 이메일 발송 (HTML 템플릿 포함)
+    try:
+        await send_password_reset_email(email, reset_link)
+    except Exception as e:
+        raise HTTPException(500, f"이메일 발송 중 오류 발생: {str(e)}")
+
+    return {"message": "비밀번호 재설정 이메일이 발송되었습니다."}
+
+
+# ===== 비밀번호 재설정 완료 =====
+async def password_reset_confirm_service(request: Request, db: Session):
+    """토큰 검증 후 새 비밀번호로 변경"""
     data = await request.json()
-    token = data.get("token"); new_password = data.get("new_password")
+    token = data.get("token")
+    new_password = data.get("new_password")
+
     if not token or not new_password:
         raise HTTPException(400, "토큰/새 비밀번호는 필수입니다.")
+
     _validate_password_rules(new_password)
+
     payload = verify_password_reset_token(token)
     email = payload["email"]
+
     user = db.query(User).filter(User.email == email, User.is_active == True).first()
     if not user:
         raise HTTPException(404, "사용자를 찾을 수 없습니다.")
+
+    # 새 비밀번호 저장
     user.password_hash = get_password_hash(new_password)
     user.updated_at = datetime.now()
-    db.commit(); db.refresh(user)
-    return {"message":"비밀번호가 재설정되었습니다."}
+    db.commit()
+    db.refresh(user)
+
+    return {"message": "비밀번호가 재설정되었습니다."}

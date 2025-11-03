@@ -2,8 +2,8 @@ from fastapi import APIRouter, Request, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.utils.auth import get_current_user_from_cookie
-from app.services.admin_settings_service import admin_settings_service
-from app.utils.security import verify_password, get_password_hash
+from app.services.admin_setting_service import admin_settings_service
+from app.utils.auth import verify_password, get_password_hash
 from sqlalchemy import func
 
 router = APIRouter(prefix="/api/admin", tags=["Admin:Settings"])
