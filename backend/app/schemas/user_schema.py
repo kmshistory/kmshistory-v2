@@ -130,5 +130,6 @@ class PasswordChange(BaseModel):
         
         return v
 
-    class UserPageResponse(PageResponse[UserResponse]):
-        pass
+class UserPageResponse(PageResponse[UserResponse]):
+    """사용자 페이징 응답 스키마"""
+    pass

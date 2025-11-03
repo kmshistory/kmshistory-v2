@@ -2,8 +2,8 @@
 from .user_schema import UserCreate, UserLogin, UserResponse, UserUpdate, EmailVerification, PasswordChange;
 from .participant_schema import ParticipantCreate, ParticipantResponse, ParticipantUpdate;
 from .terms_schema import TermsCreate, TermsUpdate, TermsResponse, TermsListResponse;
-from .faq_schema import FAQCreate, FAQUpdate, FAQResponse, FAQPageResponse;
-from .notice_schema import NoticeCreate, NoticeUpdate, NoticeResponse, NoticePageResponse;
+from .faq_schema import FAQCreate, FAQUpdate, FAQResponse, FAQPageResponse, FAQCategoryResponse;
+from .notice_schema import NoticeCreate, NoticeUpdate, NoticeResponse, NoticePageResponse, NoticeCategoryResponse;
 from .common import PageResponse;
 from .draw_schema import DrawRecordCreate, DrawRecordUpdate, DrawParticipantResponse;
 from .notification_schema import NotificationCreate, NotificationUpdate, NotificationResponse, NotificationPageResponse;
@@ -26,10 +26,12 @@ __all__ = [
     "FAQUpdate",
     "FAQResponse",
     "FAQPageResponse",
+    "FAQCategoryResponse",
     "NoticeCreate",
     "NoticeUpdate",
     "NoticeResponse",
     "NoticePageResponse",
+    "NoticeCategoryResponse",
     "PageResponse",
     "DrawRecordCreate",
     "DrawRecordUpdate",
