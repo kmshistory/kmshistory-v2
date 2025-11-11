@@ -114,3 +114,12 @@ jspm_packages/
 
 # Google API token
 token.json
+
+#uploads
+uploads/
+
+#shell scripts
+*.sh
+
+#memo
+*.txt
