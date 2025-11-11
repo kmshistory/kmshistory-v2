@@ -25,9 +25,26 @@ async def get_dashboard_overview(request: Request, db: Session = Depends(get_db)
     """
     require_admin(request, db)
     
-    stats = dashboard_service.get_summary_stats(db)
-    upcoming_events = dashboard_service.get_upcoming_events()
-    recent_notifications = dashboard_service.get_recent_notifications(db)
+    try:
+        stats = dashboard_service.get_summary_stats(db)
+    except Exception as e:
+        import traceback
+        print(f"[ERROR] 대시보드 통계 조회 중 오류: {str(e)}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"대시보드 통계 조회 중 오류: {str(e)}")
+    
+    # Google Calendar와 알림은 선택적 기능이므로 오류 발생 시 빈 배열 반환
+    try:
+        upcoming_events = dashboard_service.get_upcoming_events()
+    except Exception as e:
+        print(f"[WARNING] 다가오는 일정 조회 중 오류 (무시됨): {str(e)}")
+        upcoming_events = []
+    
+    try:
+        recent_notifications = dashboard_service.get_recent_notifications(db)
+    except Exception as e:
+        print(f"[WARNING] 최근 알림 조회 중 오류 (무시됨): {str(e)}")
+        recent_notifications = []
 
     return {
         "summary": stats,
