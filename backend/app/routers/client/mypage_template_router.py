@@ -25,41 +25,38 @@ async def mypage_main(request: Request, db: Session = Depends(get_db)):
         {"request": request, "user": current_user, "title": "마이페이지"},
     )
 
-# 정보 수정 페이지
-@router.get("/mypage/edit_profile", response_class=HTMLResponse)
-async def mypage_edit_profile(request: Request, db: Session = Depends(get_db)):
-    try:
-        current_user = get_current_user_from_cookie(request, db)
-    except HTTPException:
-        return RedirectResponse(url="/login", status_code=303)
+# @router.get("/mypage/edit_profile", response_class=HTMLResponse)  # React로 대체됨
+# async def mypage_edit_profile(request: Request, db: Session = Depends(get_db)):
+#     try:
+#         current_user = get_current_user_from_cookie(request, db)
+#     except HTTPException:
+#         return RedirectResponse(url="/login", status_code=303)
+#
+#     return templates.TemplateResponse(
+#         "client/mypage/edit_profile.html",
+#         {"request": request, "user": current_user, "title": "정보수정"},
+#     )
 
-    return templates.TemplateResponse(
-        "client/mypage/edit_profile.html",
-        {"request": request, "user": current_user, "title": "정보수정"},
-    )
+# @router.get("/mypage/change-password", response_class=HTMLResponse)  # React로 대체됨
+# async def mypage_change_password_page(request: Request, db: Session = Depends(get_db)):
+#     try:
+#         current_user = get_current_user_from_cookie(request, db)
+#     except HTTPException:
+#         return RedirectResponse(url="/login", status_code=303)
+#
+#     return templates.TemplateResponse(
+#         "client/mypage/change_password.html",
+#         {"request": request, "user": current_user, "title": "비밀번호 변경"},
+#     )
 
-# 비밀번호 변경 페이지
-@router.get("/mypage/change-password", response_class=HTMLResponse)
-async def mypage_change_password_page(request: Request, db: Session = Depends(get_db)):
-    try:
-        current_user = get_current_user_from_cookie(request, db)
-    except HTTPException:
-        return RedirectResponse(url="/login", status_code=303)
-
-    return templates.TemplateResponse(
-        "client/mypage/change_password.html",
-        {"request": request, "user": current_user, "title": "비밀번호 변경"},
-    )
-
-# 회원탈퇴 페이지
-@router.get("/mypage/withdraw", response_class=HTMLResponse)
-async def mypage_withdraw_page(request: Request, db: Session = Depends(get_db)):
-    try:
-        current_user = get_current_user_from_cookie(request, db)
-    except HTTPException:
-        return RedirectResponse(url="/login", status_code=303)
-
-    return templates.TemplateResponse(
-        "client/mypage/withdraw.html",
-        {"request": request, "user": current_user, "title": "회원탈퇴"},
-    )
+# @router.get("/mypage/withdraw", response_class=HTMLResponse)  # React로 대체됨
+# async def mypage_withdraw_page(request: Request, db: Session = Depends(get_db)):
+#     try:
+#         current_user = get_current_user_from_cookie(request, db)
+#     except HTTPException:
+#         return RedirectResponse(url="/login", status_code=303)
+#
+#     return templates.TemplateResponse(
+#         "client/mypage/withdraw.html",
+#         {"request": request, "user": current_user, "title": "회원탈퇴"},
+#     )

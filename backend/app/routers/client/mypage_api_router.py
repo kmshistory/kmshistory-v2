@@ -1,8 +1,10 @@
 # app/routers/mypage_api_router.py
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from datetime import datetime
+from typing import Optional
 from app.database import get_db
 from app.models import User
 from app.utils.auth import get_current_user_from_cookie
@@ -51,3 +53,34 @@ async def withdraw_user(request: Request, db: Session = Depends(get_db)):
         response.headers[k] = v
 
     return response
+
+@router.get("/quiz/bundles")
+def mypage_bundle_history(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    user = get_current_user_from_cookie(request, db)
+    data = mypage_service.get_bundle_history(db, user.id)
+    return JSONResponse(content=jsonable_encoder(data))
+
+
+@router.get("/quiz/wrong-answers")
+def mypage_wrong_answers(
+    request: Request,
+    bundle_id: Optional[int] = Query(None),
+    topic_id: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+):
+    user = get_current_user_from_cookie(request, db)
+    data = mypage_service.get_wrong_answers(db, user.id, bundle_id=bundle_id, topic_id=topic_id)
+    return JSONResponse(content=jsonable_encoder(data))
+
+
+@router.get("/quiz/stats")
+def mypage_quiz_stats(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    user = get_current_user_from_cookie(request, db)
+    data = mypage_service.get_user_quiz_stats(db, user.id)
+    return JSONResponse(content=jsonable_encoder(data))
