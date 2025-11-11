@@ -23,7 +23,10 @@ class GoogleCalendarService:
     def __init__(self):
         self.service = None
         self.credentials = None
-        self.token_path = os.path.join(os.getcwd(), "token.json")
+        self.token_path = settings.GOOGLE_TOKEN_FILE or os.path.join(os.getcwd(), "token.json")
+        if not os.path.isabs(self.token_path):
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            self.token_path = os.path.join(base_dir, self.token_path)
         self._authenticate()
 
     # ---------------------------
