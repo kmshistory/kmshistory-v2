@@ -1,7 +1,7 @@
 import os
 import io
 import json
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 
 from google.auth.transport.requests import Request
@@ -27,16 +27,19 @@ class GoogleDriveService:
     def __init__(self):
         self.credentials = None
         self.service = None
+        self.token_path = settings.GOOGLE_TOKEN_FILE or os.path.join(os.getcwd(), "token.json")
+        if not os.path.isabs(self.token_path):
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            self.token_path = os.path.join(base_dir, self.token_path)
         self._authenticate()
 
     def _authenticate(self):
         """Google Drive API 인증 (OAuth 토큰 기반)"""
         creds = None
-        token_file = "token.json"
 
-        if os.path.exists(token_file):
+        if os.path.exists(self.token_path):
             try:
-                creds = Credentials.from_authorized_user_file(token_file, self.SCOPES)
+                creds = Credentials.from_authorized_user_file(self.token_path, self.SCOPES)
             except Exception as e:
                 print(f"⚠️ 토큰 파일 읽기 실패: {e}")
 
@@ -54,7 +57,7 @@ class GoogleDriveService:
                 self.service = None
                 return
 
-            with open(token_file, "w") as token:
+            with open(self.token_path, "w") as token:
                 token.write(creds.to_json())
 
         self.credentials = creds
@@ -97,5 +100,22 @@ class GoogleDriveService:
 
         except HttpError as e:
             raise Exception(f"Google Drive 업로드 실패: {e}")
+
+    def list_files_in_folder(self, folder_id: str, limit: int = 20) -> List[Dict[str, Any]]:
+        """지정한 Google Drive 폴더 내 파일 목록 조회"""
+        if not self.service:
+            raise Exception("Google Drive 서비스가 초기화되지 않았습니다.")
+
+        try:
+            query = f"'{folder_id}' in parents and trashed = false"
+            result = self.service.files().list(
+                q=query,
+                pageSize=limit,
+                fields="files(id,name,mimeType,webViewLink,webContentLink,createdTime,size)",
+                orderBy="createdTime desc",
+            ).execute()
+            return result.get("files", [])
+        except HttpError as e:
+            raise Exception(f"Google Drive 파일 목록 조회 실패: {e}")
 
 google_drive_service = GoogleDriveService()
