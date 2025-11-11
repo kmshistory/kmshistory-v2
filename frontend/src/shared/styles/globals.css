@@ -161,3 +161,119 @@ input, textarea, select {
     display: none;
   }
 }
+
+/* ========================================
+   Admin Layout 스타일 (백오피스)
+   ======================================== */
+
+/* LNB 스크롤 영역 설정 */
+.lnb-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.lnb-header {
+  flex-shrink: 0;
+}
+
+.lnb-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 1.5rem;
+}
+
+.lnb-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.lnb-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.lnb-content::-webkit-scrollbar-thumb {
+  background: #979DA6;
+  border-radius: 2px;
+}
+
+.lnb-content::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Sidebar collapsed state */
+#sidebar.collapsed {
+  width: 4rem;
+}
+
+#sidebar.collapsed .sidebar-text {
+  display: none;
+}
+
+#sidebar.collapsed .nav-icon {
+  margin-right: 0;
+}
+
+#sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+/* Tooltip for collapsed sidebar */
+.nav-item {
+  position: relative;
+}
+
+.nav-item .tooltip {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #051326;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s;
+  z-index: 50;
+  margin-left: 0.5rem;
+}
+
+/* Show tooltip only when sidebar is collapsed */
+#sidebar.collapsed .nav-item:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Hide sidebar toggle button when collapsed */
+#sidebar.collapsed #sidebar-toggle {
+  display: none;
+}
+
+/* Hide sidebar toggle button on mobile */
+@media (max-width: 639px) {
+  #sidebar-toggle {
+    display: none;
+  }
+}
+
+/* 접힌 상태에서도 스크롤 유지 */
+#sidebar.collapsed .lnb-container {
+  height: 100vh;
+}
+
+#sidebar.collapsed .lnb-header {
+  flex-shrink: 0;
+  height: 4rem;
+}
+
+#sidebar.collapsed .lnb-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 1.5rem;
+}

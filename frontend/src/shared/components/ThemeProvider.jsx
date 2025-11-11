@@ -1,20 +1,26 @@
 import React, { createContext, useContext } from 'react';
 import { designSystem } from '../styles/design-system';
 
-// 테마 컨텍스트 생성
-const ThemeContext = createContext();
+/**
+ * 🔹 ThemeContext
+ * - client / admin 테마를 나눠 관리
+ * - designSystem 기반으로 구성
+ */
+const ThemeContext = createContext(null);
 
-// 테마 프로바이더 컴포넌트
 export const ThemeProvider = ({ children, theme = 'client' }) => {
+  // 각 테마별 설정
   const themeConfig = {
     client: {
       ...designSystem,
-      mode: 'client'
+      mode: 'client',
+      background: '#F8FAFC', // 클라이언트용 밝은 배경
     },
     admin: {
       ...designSystem,
-      mode: 'admin'
-    }
+      mode: 'admin',
+      background: '#F3F4F6', // 관리자용 연한 회색 배경
+    },
   };
 
   const currentTheme = themeConfig[theme] || themeConfig.client;
@@ -26,7 +32,10 @@ export const ThemeProvider = ({ children, theme = 'client' }) => {
   );
 };
 
-// 테마 훅
+/**
+ * 🔹 useTheme 훅
+ * - 현재 테마 객체(designSystem 확장본) 접근 가능
+ */
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
@@ -35,9 +44,12 @@ export const useTheme = () => {
   return context;
 };
 
-// 테마 유틸리티 함수들
+/**
+ * 🔹 themeUtils
+ * - designSystem 기반 유틸 함수 모음
+ */
 export const themeUtils = {
-  // 색상 가져오기
+  /** 색상 가져오기 (예: getColor(theme, 'gray.500')) */
   getColor: (theme, colorPath) => {
     const keys = colorPath.split('.');
     let value = theme.colors;
@@ -47,22 +59,22 @@ export const themeUtils = {
     return value;
   },
 
-  // 간격 가져오기
+  /** 간격 가져오기 (예: getSpacing(theme, 'md')) */
   getSpacing: (theme, size) => {
     return theme.spacing[size] || size;
   },
 
-  // 그림자 가져오기
+  /** 그림자 가져오기 (예: getShadow(theme, 'lg')) */
   getShadow: (theme, shadow) => {
     return theme.shadows[shadow] || shadow;
   },
 
-  // 반응형 브레이크포인트
+  /** 반응형 브레이크포인트 */
   breakpoints: {
     sm: '640px',
     md: '768px',
     lg: '1024px',
     xl: '1280px',
-    '2xl': '1536px'
-  }
+    '2xl': '1536px',
+  },
 };
