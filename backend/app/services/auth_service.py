@@ -31,10 +31,11 @@ async def register_service(request, db: Session):
     email = data.get("email")
     password = data.get("password")
     nickname = data.get("nickname")
-    agree_terms = bool(data.get("agree_terms", False))
-    agree_privacy = bool(data.get("agree_privacy", False))
-    agree_collection = bool(data.get("agree_collection", False))
-    agree_marketing = bool(data.get("agree_marketing", False))
+    # camelCase와 snake_case 둘 다 지원
+    agree_terms = bool(data.get("agree_terms") or data.get("agreeTerms", False))
+    agree_privacy = bool(data.get("agree_privacy") or data.get("agreePrivacy", False))
+    agree_collection = bool(data.get("agree_collection") or data.get("agreeCollection", False))
+    agree_marketing = bool(data.get("agree_marketing") or data.get("agreeMarketing", False))
 
     if not email or not password or not nickname:
         raise HTTPException(400, "이메일/비밀번호/닉네임은 필수입니다.")
@@ -154,7 +155,8 @@ async def send_verification_code_service(request: Request, db: Session):
 
     # 인증 코드 생성
     code = _gen_code()
-    expires = datetime.now() + timedelta(minutes=3)
+    from datetime import timezone
+    expires = datetime.now(timezone.utc) + timedelta(minutes=3)
 
     ev = db.query(EmailVerificationModel).filter(
         EmailVerificationModel.email == email
@@ -177,36 +179,69 @@ async def send_verification_code_service(request: Request, db: Session):
     try:
         await send_verification_email(email, code)
     except Exception as e:
-        raise HTTPException(500, f"이메일 발송 중 오류 발생: {str(e)}")
+        import traceback
+        error_detail = f"이메일 발송 중 오류 발생: {str(e)}"
+        print(f"[ERROR] {error_detail}")
+        print(traceback.format_exc())
+        raise HTTPException(500, error_detail)
 
     return {"message": "인증 코드가 이메일로 발송되었습니다."}
 
 
 # ===== 인증 코드 검증 =====
 async def verify_email_code_service(request: Request, db: Session):
-    data = await request.json()
-    email = data.get("email")
-    code = data.get("code")
+    try:
+        data = await request.json()
+        email = data.get("email")
+        code = data.get("code")
 
-    if not email or not code:
-        raise HTTPException(400, "이메일/코드는 필수입니다.")
+        if not email or not code:
+            raise HTTPException(400, "이메일/코드는 필수입니다.")
 
-    ev = db.query(EmailVerificationModel).filter(
-        EmailVerificationModel.email == email
-    ).first()
+        # 최신 인증 코드 조회 (id 내림차순으로 최신 것 가져오기)
+        ev = db.query(EmailVerificationModel).filter(
+            EmailVerificationModel.email == email
+        ).order_by(EmailVerificationModel.id.desc()).first()
 
-    if not ev:
-        raise HTTPException(404, "인증 정보를 찾을 수 없습니다.")
-    if ev.verification_code != code:
-        raise HTTPException(400, "인증 코드가 일치하지 않습니다.")
-    if ev.expires_at < datetime.now():
-        raise HTTPException(400, "인증 코드가 만료되었습니다.")
+        if not ev:
+            raise HTTPException(404, "인증 정보를 찾을 수 없습니다. 인증번호를 다시 발송해주세요.")
+        
+        # 디버깅: 코드 값 확인
+        stored_code = str(ev.verification_code).strip()
+        input_code = str(code).strip()
+        
+        print(f"[DEBUG] 인증 코드 확인 - 이메일: {email}, 입력: '{input_code}' (len={len(input_code)}), 저장: '{stored_code}' (len={len(stored_code)})")
+        
+        # 코드 비교 (문자열 비교, 공백 제거)
+        if stored_code != input_code:
+            raise HTTPException(400, "인증 코드가 일치하지 않습니다. 다시 확인해주세요.")
+        
+        # 만료 시간 확인 (타임존 고려)
+        from datetime import timezone
+        # expires_at이 timezone-aware이면 now도 timezone-aware로 만들어야 함
+        if ev.expires_at.tzinfo:
+            now = datetime.now(timezone.utc)
+        else:
+            now = datetime.now()
+        if ev.expires_at < now:
+            raise HTTPException(400, "인증 코드가 만료되었습니다. 인증번호를 다시 발송해주세요.")
 
-    # 인증 성공 → 기록 삭제
-    db.delete(ev)
-    db.commit()
+        # 인증 성공 → 기록 삭제
+        db.delete(ev)
+        db.commit()
 
-    return {"message": "이메일 인증이 완료되었습니다."}
+        return {"message": "이메일 인증이 완료되었습니다."}
+    except HTTPException as he:
+        # HTTPException은 그대로 전달
+        raise he
+    except Exception as e:
+        import traceback
+        error_msg = f"[ERROR] verify_email_code_service 에러: {str(e)}"
+        print(error_msg)
+        traceback.print_exc()
+        # 상세 에러 메시지 제공 (개발 중 디버깅용)
+        detail_msg = f"인증 확인 중 오류가 발생했습니다: {str(e)}"
+        raise HTTPException(status_code=500, detail=detail_msg)
 
 
 async def check_email_duplicate_service(request, db: Session):
@@ -217,25 +252,40 @@ async def check_email_duplicate_service(request, db: Session):
         get_user_by_email_for_registration
     )
 
-    data = await request.json()
-    email = data.get("email")
+    try:
+        data = await request.json()
+        email = data.get("email")
 
-    if not email:
-        raise HTTPException(status_code=400, detail="이메일이 필요합니다.")
+        if not email:
+            raise HTTPException(status_code=400, detail="이메일이 필요합니다.")
 
-    email_pattern = r"^[^\s@]+@[^\s@]+\.[^\s@]+$"
-    if not re.match(email_pattern, email):
-        raise HTTPException(status_code=400, detail="올바른 이메일 형식을 입력해주세요.")
+        email_pattern = r"^[^\s@]+@[^\s@]+\.[^\s@]+$"
+        if not re.match(email_pattern, email):
+            raise HTTPException(status_code=400, detail="올바른 이메일 형식을 입력해주세요.")
 
-    existing_user = get_user_by_email(db, email)
-    if existing_user:
-        raise HTTPException(status_code=409, detail="이미 사용 중인 이메일입니다.")
+        # 데이터베이스 쿼리 실행 (타임아웃 방지를 위해 빠르게 처리)
+        print(f"[DEBUG] 이메일 중복확인 시작: {email}")
+        existing_user = get_user_by_email(db, email)
+        print(f"[DEBUG] existing_user 조회 완료: {existing_user is not None}")
+        
+        if existing_user:
+            raise HTTPException(status_code=409, detail="이미 사용 중인 이메일입니다.")
 
-    deleted_user = get_user_by_email_for_registration(db, email)
-    if deleted_user:
-        raise HTTPException(status_code=409, detail="최근 탈퇴한 사용자입니다. 다른 이메일을 사용해주세요.")
+        deleted_user = get_user_by_email_for_registration(db, email)
+        print(f"[DEBUG] deleted_user 조회 완료: {deleted_user is not None}")
+        
+        if deleted_user:
+            raise HTTPException(status_code=409, detail="최근 탈퇴한 사용자입니다. 다른 이메일을 사용해주세요.")
 
-    return {"message": "사용 가능한 이메일입니다."}
+        print(f"[DEBUG] 이메일 중복확인 완료: {email} - 사용 가능")
+        return {"message": "사용 가능한 이메일입니다."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(f"[ERROR] check_email_duplicate_service 에러: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"이메일 중복확인 중 오류가 발생했습니다: {str(e)}")
 
 async def check_nickname_duplicate_service(request, db: Session):
     """닉네임 중복 확인"""
@@ -297,13 +347,13 @@ def generate_password_reset_token(email: str) -> str:
         "type": "password_reset",
         "exp": datetime.utcnow() + timedelta(minutes=30),
     }
-    secret_key = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+    secret_key = settings.SECRET_KEY
     return jwt.encode(payload, secret_key, algorithm="HS256")
 
 
 def verify_password_reset_token(token: str) -> dict:
     """비밀번호 재설정 토큰 검증"""
-    secret_key = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+    secret_key = settings.SECRET_KEY
     try:
         payload = jwt.decode(token, secret_key, algorithms=["HS256"])
         if payload.get("type") != "password_reset":

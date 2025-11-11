@@ -59,6 +59,9 @@ class UserResponse(BaseModel):
     role: str
     is_active: bool
     is_email_verified: bool
+    is_blocked: Optional[bool] = False
+    blocked_at: Optional[datetime] = None
+    blocked_reason: Optional[str] = None
     created_at: datetime
     
     class Config:
