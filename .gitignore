@@ -118,5 +118,5 @@ uploads/
 # shell scripts
 *.sh
 
-# memo
-*.txt
+#memo
+aaa.txt
