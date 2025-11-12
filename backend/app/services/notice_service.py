@@ -503,8 +503,17 @@ def client_list_notices_service(
 
     items: List[NoticeResponse] = []
     for n, author_nickname, category_name in results:
+        # published_at 시간대 변환 시 타임존 인식 체크
         if n.published_at:
-            n.published_at = n.published_at.astimezone(KST)
+            try:
+                if n.published_at.tzinfo is None:
+                    # naive datetime이면 KST로 가정
+                    n.published_at = n.published_at.replace(tzinfo=KST)
+                else:
+                    n.published_at = n.published_at.astimezone(KST)
+            except Exception as e:
+                # 시간대 변환 실패 시 그대로 사용
+                print(f"[WARNING] published_at 시간대 변환 실패: {e}")
         items.append(_to_notice_response(n, author_nickname, category_name))
 
     page_obj = PageResponse.create(items=items, total=total, page=page, limit=limit)

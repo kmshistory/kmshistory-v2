@@ -53,8 +53,20 @@ def test_drive_service():
         logger.info(f"✅ 엑셀 폴더 내 파일 개수: {len(files)}")
         
         for file in files[:3]:  # 처음 3개 파일만 표시
-            logger.info(f"  - {file['filename']} ({file['file_size']} bytes)")
+            logger.info(f"  - {file.get('name')} ({file.get('size', 'unknown')} bytes)")
         
+        # 테스트 파일 업로드
+        logger.info("테스트 파일 업로드 실행...")
+        content = b"Drive upload test"
+        test_filename = "drive_test_upload.txt"
+        upload_result = google_drive_service.upload_file(
+            file_content=content,
+            filename=test_filename,
+            mime_type="text/plain",
+            folder_id=settings.GOOGLE_DRIVE_FOLDER_ID_EXCEL,
+        )
+        logger.info(f"✅ 테스트 파일 업로드 성공: {upload_result.get('file_id')}")
+
         return True
         
     except Exception as e:

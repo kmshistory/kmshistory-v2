@@ -7,23 +7,60 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# 이메일 설정 (구글 Gmail SMTP)
-conf = ConnectionConfig(
-    MAIL_USERNAME=settings.MAIL_USERNAME,
-    MAIL_PASSWORD=settings.MAIL_PASSWORD,
-    MAIL_FROM=settings.MAIL_FROM,
-    MAIL_PORT=settings.MAIL_PORT,
-    MAIL_SERVER=settings.MAIL_SERVER,
-    MAIL_STARTTLS=settings.MAIL_STARTTLS,
-    MAIL_SSL_TLS=settings.MAIL_SSL_TLS,
-    USE_CREDENTIALS=True,
-    VALIDATE_CERTS=True,
-    MAIL_FROM_NAME="강민성 한국사"  # 발신자 이름 추가
-)
+# 이메일 설정을 lazy loading으로 변경 (모듈 로드 시 생성하지 않음)
+_conf = None
+
+def get_email_config():
+    """이메일 설정을 가져옵니다 (필요할 때만 생성)"""
+    global _conf
+    if _conf is None:
+        # 디버깅: 설정 값 확인
+        username_preview = settings.MAIL_USERNAME[:3] + '***' if settings.MAIL_USERNAME and len(settings.MAIL_USERNAME) > 3 else (settings.MAIL_USERNAME if settings.MAIL_USERNAME else 'None')
+        logger.info(f"[이메일 설정 확인] MAIL_USERNAME: {username_preview}")
+        logger.info(f"[이메일 설정 확인] MAIL_PASSWORD: {'***' if settings.MAIL_PASSWORD else 'None'}")
+        logger.info(f"[이메일 설정 확인] MAIL_FROM: {settings.MAIL_FROM or '(설정되지 않음)'}")
+        logger.info(f"[이메일 설정 확인] MAIL_SERVER: {settings.MAIL_SERVER}")
+        logger.info(f"[이메일 설정 확인] MAIL_PORT: {settings.MAIL_PORT}")
+        logger.info(f"[이메일 설정 확인] MAIL_STARTTLS: {settings.MAIL_STARTTLS}")
+        logger.info(f"[이메일 설정 확인] MAIL_SSL_TLS: {settings.MAIL_SSL_TLS}")
+        
+        # 이메일 설정이 없으면 에러 대신 경고만 출력하고 None 반환
+        if not settings.MAIL_USERNAME or not settings.MAIL_PASSWORD:
+            logger.warning("이메일 설정이 없습니다. MAIL_USERNAME과 MAIL_PASSWORD를 .env 파일에 설정해주세요.")
+            logger.warning("개발 환경에서는 이메일 발송이 비활성화됩니다.")
+            logger.warning(f"현재 MAIL_USERNAME 값: {repr(settings.MAIL_USERNAME)}")
+            logger.warning(f"현재 MAIL_PASSWORD 값: {'설정됨' if settings.MAIL_PASSWORD else 'None'}")
+            return None
+        
+        try:
+            _conf = ConnectionConfig(
+                MAIL_USERNAME=settings.MAIL_USERNAME,
+                MAIL_PASSWORD=settings.MAIL_PASSWORD,
+                MAIL_FROM=settings.MAIL_FROM or settings.MAIL_USERNAME,
+                MAIL_PORT=settings.MAIL_PORT,
+                MAIL_SERVER=settings.MAIL_SERVER,
+                MAIL_STARTTLS=settings.MAIL_STARTTLS,
+                MAIL_SSL_TLS=settings.MAIL_SSL_TLS,
+                USE_CREDENTIALS=True,
+                VALIDATE_CERTS=True,
+                MAIL_FROM_NAME="강민성 한국사"
+            )
+            logger.info(f"[이메일 설정 완료] 서버: {settings.MAIL_SERVER}:{settings.MAIL_PORT}, FROM: {settings.MAIL_FROM or settings.MAIL_USERNAME}")
+        except Exception as e:
+            logger.error(f"[이메일 설정 생성 실패] {str(e)}")
+            raise
+    return _conf
 
 async def send_verification_email(email: str, verification_code: str):
     """이메일 인증 코드 발송"""
     try:
+        logger.info(f"[이메일 발송 시도] 대상: {email}, 코드: {verification_code}")
+        conf = get_email_config()
+        if conf is None:
+            logger.warning(f"이메일 설정이 없어 인증 코드를 발송할 수 없습니다. (대상: {email}, 코드: {verification_code})")
+            logger.warning("개발 환경에서는 이메일 발송을 건너뜁니다.")
+            return True  # 개발 환경에서는 성공으로 처리
+        
         message = MessageSchema(
             subject="[강민성 한국사] 이메일 인증 코드 안내",
             recipients=[email],
@@ -43,20 +80,30 @@ async def send_verification_email(email: str, verification_code: str):
             subtype="plain"
         )
         
+        logger.info(f"[이메일 발송 중] SMTP 서버 연결 시도: {settings.MAIL_SERVER}:{settings.MAIL_PORT}")
         fm = FastMail(conf)
         await fm.send_message(message)
-        logger.info(f"인증 코드 발송 성공: {email}")
+        logger.info(f"[이메일 발송 성공] 인증 코드 발송 완료: {email}")
         return True
     except Exception as e:
-        logger.error(f"이메일 발송 실패: {str(e)}")
+        import traceback
+        logger.error(f"[이메일 발송 실패] 대상: {email}, 에러: {str(e)}")
+        logger.error(f"[이메일 발송 실패] 상세 에러:\n{traceback.format_exc()}")
         raise e
 
 async def send_welcome_email(email: str, nickname: str):
     """환영 이메일 발송"""
-    message = MessageSchema(
-        subject="강민성 한국사 회원가입을 환영합니다!",
-        recipients=[email],
-        body=f"""
+    try:
+        conf = get_email_config()
+        if conf is None:
+            logger.warning(f"이메일 설정이 없어 환영 이메일을 발송할 수 없습니다. (대상: {email})")
+            logger.warning("개발 환경에서는 이메일 발송을 건너뜁니다.")
+            return True  # 개발 환경에서는 성공으로 처리
+        
+        message = MessageSchema(
+            subject="강민성 한국사 회원가입을 환영합니다!",
+            recipients=[email],
+            body=f"""
 안녕하세요. {nickname}님!
 
 강민성 한국사 회원가입을 환영합니다.
@@ -66,15 +113,27 @@ async def send_welcome_email(email: str, nickname: str):
 감사합니다.
 강민성 한국사
         """,
-        subtype="plain"
-    )
-    
-    fm = FastMail(conf)
-    await fm.send_message(message)
+            subtype="plain"
+        )
+        
+        fm = FastMail(conf)
+        await fm.send_message(message)
+        logger.info(f"환영 이메일 발송 성공: {email}")
+        return True
+    except Exception as e:
+        logger.error(f"환영 이메일 발송 실패: {str(e)}")
+        raise e
 
 async def send_password_reset_email(email: str, reset_link: str):
     """비밀번호 재설정 이메일 발송"""
     try:
+        conf = get_email_config()
+        if conf is None:
+            logger.warning(f"이메일 설정이 없어 비밀번호 재설정 이메일을 발송할 수 없습니다. (대상: {email})")
+            logger.warning("개발 환경에서는 이메일 발송을 건너뜁니다.")
+            logger.warning(f"비밀번호 재설정 링크: {reset_link}")
+            return True  # 개발 환경에서는 성공으로 처리
+        
         message = MessageSchema(
             subject="[강민성 한국사] 비밀번호 재설정 안내",
             recipients=[email],

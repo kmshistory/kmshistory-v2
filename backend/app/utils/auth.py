@@ -56,7 +56,18 @@ def get_current_user_from_cookie(request: Request, db: Session = Depends(get_db)
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    payload = verify_token(token)
+    try:
+        payload = verify_token(token)
+    except HTTPException:
+        raise
+    except Exception as e:
+        # JWT 검증 실패 시
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="로그인 시간이 만료되었습니다",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     user_id = payload.get("sub")
     if user_id is None:
         raise HTTPException(
@@ -65,7 +76,25 @@ def get_current_user_from_cookie(request: Request, db: Session = Depends(get_db)
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    user = db.query(User).filter(User.id == user_id).first()
+    # user_id를 정수로 변환 (토큰에서 문자열로 저장됨)
+    try:
+        user_id_int = int(user_id)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="잘못된 사용자 정보입니다",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    try:
+        user = db.query(User).filter(User.id == user_id_int).first()
+    except Exception as e:
+        # 데이터베이스 에러 발생 시
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="사용자 정보 조회 중 오류가 발생했습니다",
+        )
+    
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -130,12 +159,18 @@ def set_auth_cookie(response, token: str, expires_delta=None):
     HttpOnly 쿠키에 JWT 토큰 저장
     """
     max_age = int(expires_delta.total_seconds()) if expires_delta else 60 * 60 * 24  # 기본 1일
+    
+    # 환경에 따라 secure 옵션 조정 (HTTPS인 경우에만 True)
+    # localhost 개발 환경에서는 False로 설정
+    import os
+    is_production = os.getenv("ENVIRONMENT") == "production" or os.getenv("ENV") == "production"
+    secure_cookie = is_production  # 프로덕션에서만 secure=True
 
     response.set_cookie(
         key="access_token",
         value=token,
         httponly=True,
-        secure=True,
+        secure=secure_cookie,  # localhost에서는 False
         samesite="lax",
         max_age=max_age,
         path="/"
@@ -147,14 +182,18 @@ def clear_auth_cookie(response):
     JWT 쿠키 삭제 (로그아웃 시)
     - path="/" : 모든 경로에서 쿠키 삭제
     - httponly=True : 자바스크립트 접근 차단 (보안 강화)
-    - secure=True : HTTPS에서만 전송
+    - secure: 환경에 따라 조정 (프로덕션에서만 True)
     - samesite="lax" : CSRF 공격 방어
     """
+    import os
+    is_production = os.getenv("ENVIRONMENT") == "production" or os.getenv("ENV") == "production"
+    secure_cookie = is_production  # 프로덕션에서만 secure=True
+    
     response.delete_cookie(
         key="access_token",
         path="/",
         httponly=True,
-        secure=True,
+        secure=secure_cookie,  # localhost에서는 False
         samesite="lax"
     )
 

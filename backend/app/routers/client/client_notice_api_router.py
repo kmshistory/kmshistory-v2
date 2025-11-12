@@ -23,10 +23,18 @@ async def client_notice_list_api(
     category_id: str | None = None,
     db: Session = Depends(get_db),
 ):
-    page_res, _ = client_list_notices_service(
-        db=db, page=page, limit=limit, search=search, category_id=category_id
-    )
-    return page_res
+    try:
+        page_res, _ = client_list_notices_service(
+            db=db, page=page, limit=limit, search=search, category_id=category_id
+        )
+        return page_res
+    except Exception as e:
+        import traceback
+        error_msg = f"[ERROR] client_notice_list_api 에러: {str(e)}"
+        print(error_msg)
+        traceback.print_exc()
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=f"공지사항 조회 중 오류가 발생했습니다: {str(e)}")
 
 
 @router.get("/notices/{notice_id}", response_model=NoticeResponse)

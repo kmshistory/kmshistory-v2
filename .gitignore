@@ -111,3 +111,15 @@ jspm_packages/
 
 # TernJS port file
 .tern-port
+
+# Google API token
+token.json
+
+#uploads
+uploads/
+
+#shell scripts
+*.sh
+
+#memo
+*.txt

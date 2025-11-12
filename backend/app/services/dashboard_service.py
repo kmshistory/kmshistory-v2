@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException
 
 from app.models import User, Participant, DrawRecord, Notification
+from app.models.quiz import Question, QuizBundle
 from app.services.calendar_service import calendar_service   # ✅ 추가
 from app.services.notification_service import notification_service  # ✅ 추가
 
@@ -28,6 +29,9 @@ class DashboardService:
             # 읽지 않은 알림 수
             unread_notifications = db.query(Notification).filter(Notification.is_read == False).count()
 
+            total_questions = db.query(Question).count()
+            total_bundles = db.query(QuizBundle).count()
+
             return {
                 "total_users": total_users,
                 "total_participants": total_participants,
@@ -35,6 +39,8 @@ class DashboardService:
                 "participants_with_description": participants_with_description,
                 "total_draws": total_draws,
                 "unread_notifications": unread_notifications,
+                "total_questions": total_questions,
+                "total_bundles": total_bundles,
             }
         except Exception as e:
             raise HTTPException(500, f"요약 통계 조회 중 오류: {str(e)}")
@@ -73,8 +79,13 @@ class DashboardService:
                     "htmlLink": e.get("htmlLink", ""),
                 })
             return upcoming[:5]
+        except HTTPException:
+            # HTTPException은 그대로 전파하지 않고 빈 배열 반환
+            return []
         except Exception as e:
-            raise HTTPException(500, f"다가오는 일정 조회 중 오류: {str(e)}")
+            # Google Calendar가 초기화되지 않았거나 다른 오류 발생 시 빈 배열 반환
+            print(f"[WARNING] 다가오는 일정 조회 중 오류 (무시됨): {str(e)}")
+            return []
 
     def get_recent_notifications(self, db: Session, limit: int = 5):
         """최근 알림 목록"""
@@ -90,7 +101,9 @@ class DashboardService:
                 for n in notifications
             ]
         except Exception as e:
-            raise HTTPException(500, f"최근 알림 조회 중 오류: {str(e)}")
+            # 알림 조회 실패 시 빈 배열 반환 (대시보드가 계속 작동하도록)
+            print(f"[WARNING] 최근 알림 조회 중 오류 (무시됨): {str(e)}")
+            return []
 
 
 dashboard_service = DashboardService()

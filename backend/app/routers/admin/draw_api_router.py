@@ -64,6 +64,17 @@ async def get_draw_detail_api(request: Request, draw_id: int, db: Session = Depe
     try:
         draw, participants = draw_service.get_draw_detail(db, draw_id)
         winners = [p for p in participants if p.is_winner]
+        
+        # upload_file 정보 포함
+        upload_file_data = None
+        if draw.upload_file:
+            upload_file_data = {
+                "id": draw.upload_file.id,
+                "original_filename": draw.upload_file.original_filename,
+                "file_size": draw.upload_file.file_size,
+                "drive_web_view_link": draw.upload_file.drive_web_view_link,
+                "created_at": draw.upload_file.created_at.isoformat() if draw.upload_file.created_at else None,
+            }
 
         response_data = {
             "id": draw.id,
@@ -73,9 +84,11 @@ async def get_draw_detail_api(request: Request, draw_id: int, db: Session = Depe
             "total_participants": draw.total_participants,
             "winner_count": draw.winner_count,
             "created_at": draw.created_at.isoformat() if draw.created_at else None,
+            "upload_file": upload_file_data,
             "participants": [
                 {
                     "id": p.id,
+                    "participant_number": p.participant_number,
                     "name": p.name,
                     "email": p.email,
                     "description": p.description,

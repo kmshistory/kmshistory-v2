@@ -16,19 +16,20 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.config import settings
 import requests
-import urllib.parse
+from urllib.parse import urlencode
+from datetime import datetime
 
-# 필요한 Google API 스코프
+# 필요한 Google API 스코프 (서비스 기본값 사용)
 SCOPES = [
-    'https://www.googleapis.com/auth/drive.file',
     'https://www.googleapis.com/auth/calendar',
+    'https://www.googleapis.com/auth/drive.file',
     'https://www.googleapis.com/auth/spreadsheets',
     'https://www.googleapis.com/auth/youtube.readonly',
     'https://www.googleapis.com/auth/yt-analytics.readonly',
-    'https://www.googleapis.com/auth/yt-analytics-monetary.readonly'
+    'https://www.googleapis.com/auth/yt-analytics-monetary.readonly',
 ]
-
-TOKEN_FILE = 'token.json'
+REDIRECT_URI = settings.GOOGLE_TOKEN_REDIRECT_URI or settings.GOOGLE_REDIRECT_URI
+TOKEN_FILE = settings.GOOGLE_TOKEN_FILE
 
 
 def main():
@@ -45,16 +46,25 @@ def main():
     
     if choice == "1":
         # 1단계: 인증 URL 생성
-        params = {
-            'client_id': settings.GOOGLE_CLIENT_ID,
-            'redirect_uri': settings.GOOGLE_REDIRECT_URI,
-            'response_type': 'code',
-            'scope': ' '.join(SCOPES),
-            'access_type': 'offline',
-            'prompt': 'consent'
-        }
+        if not REDIRECT_URI:
+            print("❌ GOOGLE_TOKEN_REDIRECT_URI 또는 GOOGLE_REDIRECT_URI가 설정되어 있지 않습니다.")
+            sys.exit(1)
+
+        if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
+            print("❌ GOOGLE_CLIENT_ID 또는 GOOGLE_CLIENT_SECRET이 설정되어 있지 않습니다.")
+            sys.exit(1)
         
-        auth_url = 'https://accounts.google.com/o/oauth2/auth?' + urllib.parse.urlencode(params)
+        params = {
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "redirect_uri": REDIRECT_URI,
+            "response_type": "code",
+            "scope": " ".join(SCOPES),
+            "access_type": "offline",
+            "prompt": "consent",
+            "include_granted_scopes": "true",
+            "state": datetime.utcnow().isoformat()
+        }
+        auth_url = "https://accounts.google.com/o/oauth2/auth?" + urlencode(params)
         
         print("\n" + "="*80)
         print("🔗 다음 URL을 브라우저에서 열어 Google 로그인하세요:")
@@ -85,53 +95,52 @@ def main():
         
         print("⏳ 토큰 발급 중...")
         
-        # HTTP POST로 토큰 요청
         data = {
-            'code': code,
-            'client_id': settings.GOOGLE_CLIENT_ID,
-            'client_secret': settings.GOOGLE_CLIENT_SECRET,
-            'redirect_uri': settings.GOOGLE_REDIRECT_URI,
-            'grant_type': 'authorization_code'
+            "code": code,
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "client_secret": settings.GOOGLE_CLIENT_SECRET,
+            "redirect_uri": REDIRECT_URI,
+            "grant_type": "authorization_code",
         }
-        
+
         try:
-            response = requests.post('https://oauth2.googleapis.com/token', data=data)
-            
-            if response.status_code == 200:
-                result = response.json()
-                
-                # token.json 생성
-                from google.oauth2.credentials import Credentials
-                
-                creds = Credentials(
-                    token=result.get('access_token'),
-                    refresh_token=result.get('refresh_token'),
-                    token_uri='https://oauth2.googleapis.com/token',
-                    client_id=settings.GOOGLE_CLIENT_ID,
-                    client_secret=settings.GOOGLE_CLIENT_SECRET,
-                    scopes=SCOPES
-                )
-                
-                with open(TOKEN_FILE, 'w') as token:
-                    token.write(creds.to_json())
-                
-                print("\n✅ 토큰 발급 완료!")
-                print(f"✅ Access Token: {result.get('access_token', '')[:50]}...")
-                if result.get('refresh_token'):
-                    print(f"✅ Refresh Token: {result.get('refresh_token', '')[:50]}...")
-                print(f"\n🎉 성공! {TOKEN_FILE} 파일이 생성되었습니다!")
-                print("\n서버를 재시작하세요: python main.py\n")
-                
-            else:
-                print(f"\n❌ 실패!")
-                print(f"응답 코드: {response.status_code}")
-                print(f"응답 내용: {response.text}")
-                print("\n💡 인증 코드가 만료되었을 수 있습니다. 1번부터 다시 시도하세요.\n")
-                
+            response = requests.post("https://oauth2.googleapis.com/token", data=data, timeout=30)
         except Exception as e:
-            print(f"\n❌ 에러: {e}")
+            print(f"\n❌ 토큰 요청 중 오류: {e}")
             import traceback
             traceback.print_exc()
+            return
+
+        if response.status_code != 200:
+            print(f"\n❌ 실패! Google OAuth 콜백 처리 실패: {response.text}")
+            print("\n💡 인증 코드를 새로 발급 받아 다시 시도하세요.\n")
+            return
+
+        result = response.json()
+
+        from google.oauth2.credentials import Credentials
+
+        creds = Credentials(
+            token=result.get("access_token"),
+            refresh_token=result.get("refresh_token"),
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=settings.GOOGLE_CLIENT_ID,
+            client_secret=settings.GOOGLE_CLIENT_SECRET,
+            scopes=SCOPES,
+        )
+
+        try:
+            with open(TOKEN_FILE, "w") as token_file:
+                token_file.write(creds.to_json())
+        except Exception as e:
+            print(f"\n❌ 토큰 파일 저장 실패: {e}")
+            return
+
+        print("\n✅ 토큰 발급 완료!")
+        print(f"✅ 저장 위치: {TOKEN_FILE}")
+        if result.get("refresh_token"):
+            print(f"✅ Refresh Token: {result.get('refresh_token')[:50]}...")
+        print("\n서버를 재시작하세요: python main.py\n")
     
     elif choice == "3":
         print("종료합니다.")

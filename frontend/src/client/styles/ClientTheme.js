@@ -3,10 +3,10 @@ export const clientTheme = {
   // 레이아웃
   layout: {
     header: {
-      height: '4rem', // 64px
-      backgroundColor: '#051326',
+      height: 'auto', // 내용에 따라 자동 조정 (기존과 동일)
+      backgroundColor: '#051326', // 기존 bg-dark 색상
       borderBottom: 'none',
-      shadow: 'none'
+      shadow: 'none' // 기존과 동일
     },
     footer: {
       backgroundColor: '#051326',
@@ -23,14 +23,21 @@ export const clientTheme = {
   // 네비게이션
   navigation: {
     link: {
-      color: '#D1D5DB',
-      hoverColor: '#F2F2F2',
+      color: '#D1D5DB', // text-gray-300
+      hoverColor: '#F2F2F2', // text-light
       fontWeight: 'bold',
       transition: 'color 200ms ease-in-out'
     },
     activeLink: {
-      color: '#F2F2F2',
+      color: '#F2F2F2', // text-light
       fontWeight: 'bold'
+    },
+    mobileMenu: {
+      backgroundColor: '#051326', // bg-dark
+      borderTopColor: '#374151', // border-gray-700
+      hoverBackgroundColor: '#374151', // hover:bg-gray-700
+      textColor: '#D1D5DB', // text-gray-300
+      hoverTextColor: '#F2F2F2' // hover:text-light
     }
   },
 
@@ -109,6 +116,45 @@ export const clientTheme = {
     '&:hover': {
       transform: 'translateY(-2px)',
       boxShadow: '0 10px 25px rgba(0,0,0,.1)'
+    }
+  },
+
+  // 홈 페이지 스타일
+  home: {
+    mainCard: {
+      backgroundColor: 'rgba(6, 31, 64, 0.1)', // bg-primary/10
+      backdropBlur: true,
+      borderColor: 'rgba(255, 255, 255, 0.5)', // border-white/50
+      borderWidth: '2px',
+      borderRadius: '0.5rem',
+      padding: '2rem',
+      hoverBackgroundColor: 'rgba(6, 31, 64, 0.2)', // hover:bg-primary/20
+      transition: 'all 0.3s ease'
+    },
+    secondaryCard: {
+      backgroundColor: 'rgba(6, 37, 64, 0.1)', // bg-secondary/10
+      backdropBlur: true,
+      borderColor: 'rgba(255, 255, 255, 0.5)', // border-white/50
+      borderWidth: '2px',
+      borderRadius: '0.5rem',
+      padding: '2rem',
+      hoverBackgroundColor: 'rgba(6, 37, 64, 0.2)', // hover:bg-secondary/20
+      transition: 'all 0.3s ease'
+    },
+    smallCard: {
+      backgroundColor: 'rgba(151, 157, 166, 0.1)', // bg-light/10
+      backdropBlur: true,
+      borderColor: 'rgba(255, 255, 255, 0.5)', // border-white/50
+      borderWidth: '2px',
+      borderRadius: '0.5rem',
+      padding: '1.5rem',
+      hoverBackgroundColor: 'rgba(151, 157, 166, 0.2)', // hover:bg-light/20
+      transition: 'all 0.3s ease'
+    },
+    iconColors: {
+      blue: '#3B82F6', // bg-blue-500
+      yellow: '#EAB308', // bg-yellow-500
+      green: '#10B981' // bg-green-500
     }
   }
 };
