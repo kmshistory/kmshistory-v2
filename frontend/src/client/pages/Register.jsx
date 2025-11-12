@@ -16,6 +16,14 @@ export default function Register() {
   const { input, label } = clientTheme.form;
   const { primary: primaryButton } = clientTheme.button;
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '회원가입 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   // 폼 상태
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

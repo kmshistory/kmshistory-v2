@@ -9,6 +9,14 @@ export default function TermsOfService() {
   const viewerRef = useRef(null);
   const viewerInstanceRef = useRef(null);
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '이용약관 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   // Toast UI Editor 스크립트 및 CSS 로드
   useEffect(() => {
     let cssLoaded = false;

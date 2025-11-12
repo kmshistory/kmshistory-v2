@@ -12,6 +12,14 @@ export default function Dashboard() {
   });
   const navigate = useNavigate();
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '대시보드 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   useEffect(() => {
     fetchDashboardData();
   }, []);

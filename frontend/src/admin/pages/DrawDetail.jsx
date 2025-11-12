@@ -12,6 +12,14 @@ export default function DrawDetail() {
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '1', 10));
   const itemsPerPage = 20;
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '추첨 상세 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   useEffect(() => {
     if (drawId) {
       fetchDraw();

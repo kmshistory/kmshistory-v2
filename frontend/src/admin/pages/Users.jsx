@@ -17,6 +17,14 @@ export default function Users() {
   });
   const limit = 10;
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '사용자 관리 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   // 모달 상태
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [formModalOpen, setFormModalOpen] = useState(false);

@@ -16,6 +16,14 @@ export default function Home() {
   // 🧩 clientTheme 기반 스타일
   const { mainCard, secondaryCard, smallCard, iconColors } = clientTheme.home;
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   // 부드러운 페이드 인
   useEffect(() => {
     setTimeout(() => setFadeIn(true), 100);
@@ -310,17 +318,17 @@ export default function Home() {
               {/* 메인 콘텐츠 */}
               <div className="flex flex-col lg:flex-row">
                 {/* 좌측: 텍스트 콘텐츠 */}
-                <div className="flex-1 p-6 lg:p-8">
-                  <div className="mb-6">
-                    <h4 className="text-2xl font-bold text-white mb-2">강민성</h4>
-                    <p className="text-white/80 text-sm sm:text-lg">이해와 흐름으로 보는 한국사</p>
+                <div className="flex-1 p-6 lg:p-8 text-left">
+                  <div className="mb-6 text-left">
+                    <h4 className="text-2xl font-bold text-white mb-2 text-left">강민성</h4>
+                    <p className="text-white/80 text-sm sm:text-lg text-left">이해와 흐름으로 보는 한국사</p>
                   </div>
 
                   <br />
                   
-                  <div className="space-y-6 text-white/90">
-                    <div>
-                      <h5 className="font-bold text-white mb-3 text-lg sm:text-2xl">📚 주요 경력</h5>
+                  <div className="space-y-6 text-white/90 text-left">
+                    <div className="text-left">
+                      <h5 className="font-bold text-white mb-3 text-lg sm:text-2xl text-left">📚 주요 경력</h5>
                       <ul className="space-y-2 text-md">
                         <li className="flex items-start">
                           <span className="w-2 h-2 bg-white/60 rounded-full mt-2 mr-3 flex-shrink-0"></span>
@@ -355,7 +363,7 @@ export default function Home() {
                 <div className="lg:w-80 xl:w-96 p-6 lg:p-8 flex items-center justify-center bg-white/5">
                   <div className="w-full max-w-sm">
                     <img
-                      src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2F4jFKy%2FbtsQ3oiCnwA%2FAAAAAAAAAAAAAAAAAAAAAAK-dbNB7lzMWQ3awrWbr2JNZXYOtQpXKDNqCeuU0VHd%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1761922799%26allow_ip%3D%26allow_referer%3D%26signature%3DzmqCPFBGB1y%252FNZjMO%252Be%252Fn%252FHj%252ByQ%253D"
+                      src="/uploads/profile.png"
                       alt="강민성 선생님"
                       className="w-full h-auto rounded-lg shadow-lg object-cover"
                     />

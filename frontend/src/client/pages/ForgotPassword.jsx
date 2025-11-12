@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme, themeUtils } from '../../shared/components/ThemeProvider';
 import { clientTheme } from '../styles/ClientTheme';
@@ -22,6 +22,14 @@ export default function ForgotPassword() {
   // 🧩 clientTheme 기반 스타일
   const { input, label } = clientTheme.form;
   const { primary: primaryButton } = clientTheme.button;
+
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '비밀번호 찾기 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
 
   // 폼 제출
   const handleSubmit = async (e) => {

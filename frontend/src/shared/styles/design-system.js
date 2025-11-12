@@ -1,4 +1,4 @@
-// KMS History 디자인 시스템
+// 강민성 한국사 디자인 시스템
 export const designSystem = {
   // 색상 팔레트
   colors: {

@@ -18,6 +18,14 @@ export default function Notifications() {
   // 토스트
   const [toast, setToast] = useState({ show: false, message: "", type: "info" });
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '알림 관리 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   useEffect(() => {
     loadNotifications();
   }, []);

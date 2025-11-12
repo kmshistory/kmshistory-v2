@@ -294,6 +294,13 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
 }
 
 export default function QuizStats() {
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '퀴즈 통계 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [stats, setStats] = useState(null);

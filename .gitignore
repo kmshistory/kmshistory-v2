@@ -1,6 +1,3 @@
-# 기존 프로젝트 (참고용)
-kmshistory-first-old/
-
 # Node.js
 node_modules/
 npm-debug.log*
@@ -115,11 +112,11 @@ jspm_packages/
 # Google API token
 token.json
 
-#uploads
+# uploads
 uploads/
 
-#shell scripts
+# shell scripts
 *.sh
 
-#memo
+# memo
 *.txt

@@ -19,6 +19,14 @@ export default function DrawSelect() {
   const [winnerCount, setWinnerCount] = useState(1);
   const limit = 10;
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '추첨 선택 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   // URL 파라미터에서 에러 확인
   useEffect(() => {
     const params = new URLSearchParams(location.search);

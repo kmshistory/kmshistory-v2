@@ -15,6 +15,14 @@ export default function NoticeEdit() {
   const [loadingNotice, setLoadingNotice] = useState(true);
   const [initialContent, setInitialContent] = useState('');
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '공지사항 수정 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   useEffect(() => {
     fetchCategories();
     fetchNotice();

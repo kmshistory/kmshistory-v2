@@ -11,6 +11,14 @@ export default function EditProfile() {
   const primary = themeUtils.getColor(theme, 'primary');
   const secondary = themeUtils.getColor(theme, 'secondary');
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '프로필 수정 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   // 사용자 정보 상태
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

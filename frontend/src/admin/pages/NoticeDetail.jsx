@@ -10,6 +10,14 @@ export default function NoticeDetail() {
   const [notice, setNotice] = useState(null);
   const [error, setError] = useState(null);
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '공지사항 상세 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   useEffect(() => {
     if (noticeId) {
       fetchNotice();

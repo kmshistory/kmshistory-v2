@@ -12,6 +12,14 @@ export default function NoticeCreate() {
   const [publishedAt, setPublishedAt] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '공지사항 작성 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   useEffect(() => {
     fetchCategories();
     // Toast UI Editor 스크립트 로드

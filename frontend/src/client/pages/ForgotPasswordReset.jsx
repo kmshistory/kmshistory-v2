@@ -24,6 +24,14 @@ export default function ForgotPasswordReset() {
 
   const token = useMemo(() => new URLSearchParams(location.search).get('token') || '', [location.search]);
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '비밀번호 재설정 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   useEffect(() => {
     if (!token) {
       setErrorMessage('유효하지 않은 재설정 링크입니다.');

@@ -122,23 +122,23 @@ const ClientLayout = () => {
           {/* 네비게이션 - clientTheme 기반 */}
           <nav className="hidden md:flex space-x-8">
             <Link
-              to="/"
+              to="/quiz"
               className="transition-colors duration-200"
               style={{
-                color: location.pathname === '/' ? activeLink.color : link.color,
+                color: location.pathname.startsWith('/quiz') ? activeLink.color : link.color,
                 fontWeight: link.fontWeight,
                 transition: link.transition,
               }}
               onMouseOver={(e) => {
-                if (location.pathname !== '/') e.target.style.color = link.hoverColor;
+                if (!location.pathname.startsWith('/quiz')) e.target.style.color = link.hoverColor;
               }}
               onMouseOut={(e) => {
-                if (location.pathname !== '/') e.target.style.color = link.color;
+                if (!location.pathname.startsWith('/quiz')) e.target.style.color = link.color;
               }}
             >
-              홈
+              퀴즈
             </Link>
-            
+
             <Link
               to="/schedule"
               className="transition-colors duration-200"
@@ -155,24 +155,6 @@ const ClientLayout = () => {
               }}
             >
               일정
-            </Link>
-
-            <Link
-              to="/quiz"
-              className="transition-colors duration-200"
-              style={{
-                color: location.pathname.startsWith('/quiz') ? activeLink.color : link.color,
-                fontWeight: link.fontWeight,
-                transition: link.transition,
-              }}
-              onMouseOver={(e) => {
-                if (!location.pathname.startsWith('/quiz')) e.target.style.color = link.hoverColor;
-              }}
-              onMouseOut={(e) => {
-                if (!location.pathname.startsWith('/quiz')) e.target.style.color = link.color;
-              }}
-            >
-              퀴즈
             </Link>
 
             {/* 알림 드롭다운 메뉴 */}
@@ -362,7 +344,7 @@ const ClientLayout = () => {
         >
           <div className="px-4 py-2 space-y-1">
             <Link
-              to="/"
+              to="/quiz"
               className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
               style={{
                 color: mobileMenu.textColor,
@@ -377,9 +359,9 @@ const ClientLayout = () => {
                 e.target.style.backgroundColor = 'transparent';
               }}
             >
-              홈
+              퀴즈
             </Link>
-            
+
             <Link
               to="/schedule"
               className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
@@ -397,25 +379,6 @@ const ClientLayout = () => {
               }}
             >
               일정
-            </Link>
-
-            <Link
-              to="/quiz"
-              className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-              style={{
-                color: mobileMenu.textColor,
-              }}
-              onClick={() => setShowMobileMenu(false)}
-              onMouseOver={(e) => {
-                e.target.style.color = mobileMenu.hoverTextColor;
-                e.target.style.backgroundColor = mobileMenu.hoverBackgroundColor;
-              }}
-              onMouseOut={(e) => {
-                e.target.style.color = mobileMenu.textColor;
-                e.target.style.backgroundColor = 'transparent';
-              }}
-            >
-              퀴즈
             </Link>
             
             {/* 모바일 알림 메뉴 */}

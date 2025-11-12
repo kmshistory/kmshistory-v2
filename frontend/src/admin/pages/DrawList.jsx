@@ -12,6 +12,14 @@ export default function DrawList() {
   const query = useQuery();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '추첨 목록 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [drawRecords, setDrawRecords] = useState([]);

@@ -76,6 +76,14 @@ const buildQuestion = (raw) => {
 export default function QuizPlay() {
   const navigate = useNavigate();
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '퀴즈 플레이 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   const [mode, setMode] = useState('random');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('');

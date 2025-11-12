@@ -1,6 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function Schedule() {
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '일정 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="w-full sm:w-[95%] md:w-[768px] lg:w-[1024px] xl:w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">

@@ -210,30 +210,10 @@ const AdminLayout = ({ children }) => {
                 <h1 className="text-xl font-semibold text-gray-900">
                   {location.pathname === "/admin" ? "대시보드" : "관리자 시스템"}
                 </h1>
-                {location.pathname === "/admin" && (
-                  <Link
-                    to="/"
-                    target="_blank"
-                    className="ml-3 px-3 py-1 rounded-md text-sm font-medium text-green-700 hover:text-green-800 bg-green-100 hover:bg-green-200 transition-colors duration-200"
-                    title="클라이언트 홈"
-                  >
-                    클라이언트 홈
-                  </Link>
-                )}
               </div>
 
               {/* Right side */}
               <div className="flex items-center space-x-2">
-                {/* Client Home */}
-                <Link
-                  to="/"
-                  target="_blank"
-                  className="p-2 rounded-md text-gray-500 hover:text-gray-700"
-                  title="클라이언트 홈"
-                >
-                  <i className="fas fa-home text-lg"></i>
-                </Link>
-
                 {/* Notifications */}
                 <Link
                   to="/admin/notifications"

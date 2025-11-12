@@ -22,6 +22,14 @@ export default function FAQ() {
   // 아코디언 상태 (열린 FAQ ID 목록)
   const [openFaqIds, setOpenFaqIds] = useState(new Set());
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = 'FAQ | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   // FAQ 목록 및 카테고리 조회
   useEffect(() => {
     fetchData();

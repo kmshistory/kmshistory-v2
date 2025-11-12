@@ -17,6 +17,14 @@ export default function DrawResult() {
   const [formData, setFormData] = useState({ title: '', content: '' });
   const [drawDatetime, setDrawDatetime] = useState(new Date());
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '추첨 결과 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   // location.state에서 데이터 로드
   useEffect(() => {
     if (location.state) {

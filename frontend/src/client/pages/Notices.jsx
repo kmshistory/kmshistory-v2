@@ -19,6 +19,14 @@ export default function Notices() {
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category_id') || '');
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '공지사항 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   // 공지사항 목록 및 카테고리 조회
   useEffect(() => {
     fetchData();

@@ -22,6 +22,14 @@ export default function Schedule() {
     description: '',
   });
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '일정 관리 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   // 일정 목록 로드
   useEffect(() => {
     loadEvents();

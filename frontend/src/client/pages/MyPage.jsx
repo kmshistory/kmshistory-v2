@@ -46,6 +46,14 @@ export default function MyPage() {
   const [quizStats, setQuizStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '마이페이지 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   useEffect(() => {
     fetchUserInfo();
   }, []);

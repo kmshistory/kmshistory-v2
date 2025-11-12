@@ -14,6 +14,14 @@ export default function FAQEdit() {
   const [loading, setLoading] = useState(false);
   const [loadingFAQ, setLoadingFAQ] = useState(true);
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = 'FAQ 수정 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   useEffect(() => {
     fetchCategories();
     if (faqId) {

@@ -24,6 +24,15 @@ export default function Login() {
   const { input, label } = clientTheme.form;
   const { primary: primaryButton } = clientTheme.button;
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '로그인 | 강민성 한국사';
+    // 컴포넌트 언마운트 시 원래 제목으로 복원 (선택사항)
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   // 이미 로그인된 사용자인지 확인
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -90,11 +99,8 @@ export default function Login() {
         navigate('/', { replace: true });
       }
     } catch (error) {
-      // 오류 처리
-      const errorMessage = error.response?.data?.detail || 
-                          error.response?.data?.message || 
-                          '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.';
-      setError(errorMessage);
+      // 오류 처리 - 항상 간단한 메시지만 표시
+      setError('이메일 또는 비밀번호가 올바르지 않습니다');
       setShowErrorModal(true);
     } finally {
       setIsLoading(false);

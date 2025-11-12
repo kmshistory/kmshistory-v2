@@ -12,6 +12,14 @@ export default function Participants() {
   const query = useQuery();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '참가자 관리 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [participants, setParticipants] = useState([]);

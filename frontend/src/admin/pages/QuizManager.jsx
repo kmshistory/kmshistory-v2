@@ -1540,6 +1540,14 @@ function BundleFormModal({
 }
 
 export default function QuizManager() {
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '퀴즈 관리 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   const [activeTab, setActiveTab] = useState('questions');
 
   // Question state

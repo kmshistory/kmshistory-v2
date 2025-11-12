@@ -11,6 +11,14 @@ export default function FAQCreate() {
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = 'FAQ 작성 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   useEffect(() => {
     fetchCategories();
   }, []);

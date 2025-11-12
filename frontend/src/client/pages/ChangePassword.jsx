@@ -11,6 +11,14 @@ export default function ChangePassword() {
   const primary = themeUtils.getColor(theme, 'primary');
   const secondary = themeUtils.getColor(theme, 'secondary');
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '비밀번호 변경 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   // 폼 상태
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');

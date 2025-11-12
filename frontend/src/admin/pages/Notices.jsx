@@ -11,6 +11,14 @@ export default function AdminNotices() {
   const navigate = useNavigate();
   const query = useQuery();
 
+  // 페이지 타이틀 설정
+  useEffect(() => {
+    document.title = '공지사항 관리 | 강민성 한국사';
+    return () => {
+      document.title = '강민성 한국사';
+    };
+  }, []);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notices, setNotices] = useState([]);
