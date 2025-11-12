@@ -98,6 +98,52 @@ const AdminLayout = ({ children }) => {
     return currentPath === navPath;
   };
 
+  // 현재 경로에 맞는 페이지 이름 반환
+  const getPageTitle = () => {
+    const currentPath = location.pathname.replace(/\/$/, "") || "/";
+    
+    // 특수 케이스: /admin/settings는 "설정"으로 표시
+    if (currentPath === "/admin/settings") {
+      return "설정";
+    }
+    
+    // navSections를 순회하며 현재 경로와 매칭되는 항목 찾기
+    // 정확한 매칭 우선, 그 다음 부분 매칭 (더 긴 경로 우선)
+    let exactMatch = null;
+    let bestPartialMatch = null;
+    
+    navSections.forEach((section) => {
+      section.items.forEach((item) => {
+        const itemPath = item.href.replace(/\/$/, "") || "/";
+        
+        // 정확한 매칭
+        if (currentPath === itemPath) {
+          exactMatch = item.label;
+        }
+        // 부분 매칭 (현재 경로가 item 경로로 시작하는 경우)
+        else if (currentPath.startsWith(itemPath + "/")) {
+          // 더 긴 경로가 우선 (예: /admin/quiz/stats는 /admin/quiz보다 우선)
+          if (!bestPartialMatch || itemPath.length > bestPartialMatch.path.length) {
+            bestPartialMatch = { path: itemPath, label: item.label };
+          }
+        }
+      });
+    });
+    
+    // 정확한 매칭이 있으면 반환
+    if (exactMatch) {
+      return exactMatch;
+    }
+    
+    // 부분 매칭이 있으면 반환
+    if (bestPartialMatch) {
+      return bestPartialMatch.label;
+    }
+    
+    // 매칭되지 않는 경우 기본값
+    return "관리자 시스템";
+  };
+
   return (
     <div className="h-screen bg-samsung-light transition-colors duration-200 overflow-hidden">
       {/* Loading Overlay (필요시 사용) */}
@@ -208,7 +254,7 @@ const AdminLayout = ({ children }) => {
                   <i className="fas fa-bars text-lg"></i>
                 </button>
                 <h1 className="text-xl font-semibold text-gray-900">
-                  {location.pathname === "/admin" ? "대시보드" : "관리자 시스템"}
+                  {getPageTitle()}
                 </h1>
               </div>
 

@@ -270,7 +270,7 @@ export default function Dashboard() {
               </div>
               <div className="ml-3 text-left">
                 <h4 className="text-sm font-medium text-gray-900">대상자 관리</h4>
-                <p className="text-sm text-gray-500">대상자 관리 페이지 - 클라이언트</p>
+                <p className="text-sm text-gray-500">추첨 대상자 등록 및 관리</p>
               </div>
               <div className="ml-auto">
                 <i className="fas fa-chevron-right text-gray-400"></i>
