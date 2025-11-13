@@ -363,7 +363,7 @@ export default function Home() {
                 <div className="lg:w-80 xl:w-96 p-6 lg:p-8 flex items-center justify-center bg-white/5">
                   <div className="w-full max-w-sm">
                     <img
-                      src="/uploads/profile.png"
+                      src="/profile.png"
                       alt="강민성 선생님"
                       className="w-full h-auto rounded-lg shadow-lg object-cover"
                     />
