@@ -1,22 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTheme, themeUtils } from '../../shared/components/ThemeProvider';
 import { clientTheme } from '../styles/ClientTheme';
 import apiClient from '../../shared/api/client';
 
 export default function Register() {
   const theme = useTheme();
-  const navigate = useNavigate();
-  
-  // 🎨 theme 기반 색상
   const primary = themeUtils.getColor(theme, 'primary');
   const secondary = themeUtils.getColor(theme, 'secondary');
+  const { input } = clientTheme.form;
 
-  // 🧩 clientTheme 기반 스타일
-  const { input, label } = clientTheme.form;
-  const { primary: primaryButton } = clientTheme.button;
-
-  // 페이지 타이틀 설정
   useEffect(() => {
     document.title = '회원가입 | 강민성 한국사';
     return () => {
@@ -24,90 +17,51 @@ export default function Register() {
     };
   }, []);
 
-  // 폼 상태
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [nickname, setNickname] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
 
-  // 유효성 검사 상태
   const [emailChecked, setEmailChecked] = useState(false);
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [nicknameChecked, setNicknameChecked] = useState(false);
-  const [passwordValid, setPasswordValid] = useState(false);
-  const [passwordMatch, setPasswordMatch] = useState(false);
+  const [emailCheckResult, setEmailCheckResult] = useState({ type: '', message: '' });
 
-  // 약관 동의 상태
+  const [passwordValidation, setPasswordValidation] = useState({ length: false, complexity: false });
+  const [passwordMatch, setPasswordMatch] = useState(false);
+  const [passwordConfirmMessage, setPasswordConfirmMessage] = useState({ visible: false, success: false });
+
+  const [nicknameChecked, setNicknameChecked] = useState(false);
+  const [nicknameSuccess, setNicknameSuccess] = useState(false);
+  const [nicknameError, setNicknameError] = useState('');
+
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeCollection, setAgreeCollection] = useState(false);
   const [agreeMarketing, setAgreeMarketing] = useState(false);
 
-  // UI 상태
-  const [emailCheckResult, setEmailCheckResult] = useState({ type: '', message: '' });
-  const [nicknameError, setNicknameError] = useState('');
-  const [nicknameSuccess, setNicknameSuccess] = useState(false);
-  const [passwordValidation, setPasswordValidation] = useState({ length: false, complexity: false });
-  const [passwordConfirmMessage, setPasswordConfirmMessage] = useState({ type: '', visible: false });
-
-  // 모달 상태
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showSendCompleteModal, setShowSendCompleteModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
-  const [termsModalContent, setTermsModalContent] = useState('');
-  const [termsModalTitle, setTermsModalTitle] = useState('');
   const [currentTermsType, setCurrentTermsType] = useState(null);
-
-  // 인증 관련
-  const [verificationSectionEnabled, setVerificationSectionEnabled] = useState(false);
-  const [sendCodeBtnDisabled, setSendCodeBtnDisabled] = useState(true);
-  const [sendCodeBtnText, setSendCodeBtnText] = useState('인증번호 전송');
-  const [verifyCodeBtnDisabled, setVerifyCodeBtnDisabled] = useState(true);
-  const [verifyCodeBtnText, setVerifyCodeBtnText] = useState('인증 확인');
-  const [timeLeft, setTimeLeft] = useState(180);
-  const [showResendBtn, setShowResendBtn] = useState(false);
-  const countdownTimerRef = useRef(null);
+  const [termsModalTitle, setTermsModalTitle] = useState('');
+  const [termsModalContent, setTermsModalContent] = useState('');
 
   const [isLoading, setIsLoading] = useState(false);
+  const [registrationPending, setRegistrationPending] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [pendingMessage, setPendingMessage] = useState('');
+  const [showPendingModal, setShowPendingModal] = useState(false);
   const [error, setError] = useState('');
 
-  // Toast UI Editor 로드
-  useEffect(() => {
-    // Toast UI Editor CSS 로드
-    const cssLink = document.createElement('link');
-    cssLink.rel = 'stylesheet';
-    cssLink.href = 'https://uicdn.toast.com/editor/latest/toastui-editor.min.css';
-    document.head.appendChild(cssLink);
-
-    // Toast UI Editor JS 로드
-    const script1 = document.createElement('script');
-    script1.src = 'https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js';
-    script1.async = true;
-    document.body.appendChild(script1);
-
-    // 한국어 로케일 로드
-    const script2 = document.createElement('script');
-    script2.src = 'https://uicdn.toast.com/editor/latest/i18n/ko-kr.js';
-    script2.async = true;
-    document.body.appendChild(script2);
-
-    return () => {
-      document.head.removeChild(cssLink);
-      document.body.removeChild(script1);
-      document.body.removeChild(script2);
-    };
-  }, []);
-
-  // 전체 동의 체크박스 업데이트
   useEffect(() => {
     const allChecked = agreeTerms && agreePrivacy && agreeCollection && agreeMarketing;
     setAgreeAll(allChecked);
   }, [agreeTerms, agreePrivacy, agreeCollection, agreeMarketing]);
 
-  // 전체 동의 체크박스 클릭
+  const isFieldDisabled = registrationPending || isLoading;
+
+  const validateEmailFormat = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
   const handleAgreeAll = (checked) => {
+    if (registrationPending) return;
     setAgreeAll(checked);
     setAgreeTerms(checked);
     setAgreePrivacy(checked);
@@ -115,190 +69,69 @@ export default function Register() {
     setAgreeMarketing(checked);
   };
 
-  // 이메일 형식 검증
-  const validateEmailFormat = (email) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
-  // 이메일 중복확인
   const handleCheckEmail = async () => {
+    if (registrationPending) return;
+
     if (!email) {
-      setEmailCheckResult({ type: 'error', message: '이메일을 입력해주세요' });
-      setSendCodeBtnDisabled(true);
+      setEmailCheckResult({ type: 'error', message: '이메일을 입력해주세요.' });
       return;
     }
 
     if (!validateEmailFormat(email)) {
-      setEmailCheckResult({ type: 'error', message: '올바른 이메일 형식을 입력해주세요' });
-      setSendCodeBtnDisabled(true);
+      setEmailCheckResult({ type: 'error', message: '올바른 이메일 형식을 입력해주세요.' });
       return;
     }
 
     try {
       const response = await apiClient.post('/auth/check-email', { email });
-      
       if (response.status === 200) {
-        setEmailCheckResult({ type: 'success', message: response.data?.message || '사용 가능한 이메일입니다' });
+        setEmailCheckResult({ type: 'success', message: response.data?.message || '사용 가능한 이메일입니다.' });
         setEmailChecked(true);
-        setSendCodeBtnDisabled(false);
       }
-    } catch (error) {
-      console.error('이메일 중복확인 에러:', error);
-      const message = error.response?.data?.detail || error.message || '이메일 중복확인 중 오류가 발생했습니다.';
+    } catch (err) {
+      const message = err.response?.data?.detail || err.message || '이메일 중복확인 중 오류가 발생했습니다.';
       setEmailCheckResult({ type: 'error', message });
       setEmailChecked(false);
-      setSendCodeBtnDisabled(true);
     }
   };
 
-  // 인증번호 전송
-  const handleSendVerificationCode = async () => {
-    if (!emailChecked) {
-      alert('이메일 중복확인을 먼저 해주세요.');
-      return;
-    }
-
-    setSendCodeBtnText('발송중...');
-    setSendCodeBtnDisabled(true);
-
-    try {
-      const response = await apiClient.post('/auth/send-code', { email });
-      
-      if (response.status === 200) {
-        setShowSendCompleteModal(true);
-        setSendCodeBtnText('발송완료');
-        setVerificationSectionEnabled(true);
-        startCountdown();
-        
-        // 이메일 필드 비활성화
-        const emailField = document.getElementById('email');
-        if (emailField) emailField.disabled = true;
-      }
-    } catch (error) {
-      const message = error.response?.data?.detail || '인증번호 발송에 실패했습니다.';
-      alert(message);
-      setSendCodeBtnText('인증번호 전송');
-      setSendCodeBtnDisabled(false);
-    }
-  };
-
-  // 카운트다운 시작
-  const startCountdown = () => {
-    if (countdownTimerRef.current) {
-      clearInterval(countdownTimerRef.current);
-    }
-
-    setTimeLeft(180);
-    const startTime = Date.now();
-    const endTime = startTime + 180000; // 3분
-
-    countdownTimerRef.current = setInterval(() => {
-      const remaining = Math.ceil((endTime - Date.now()) / 1000);
-      
-      if (remaining <= 0) {
-        clearInterval(countdownTimerRef.current);
-        setTimeLeft(0);
-        setShowResendBtn(true);
-      } else {
-        setTimeLeft(remaining);
-      }
-    }, 100);
-  };
-
-  // 카운트다운 정리
-  useEffect(() => {
-    return () => {
-      if (countdownTimerRef.current) {
-        clearInterval(countdownTimerRef.current);
-      }
-    };
-  }, []);
-
-  // 인증번호 확인
-  const handleVerifyCode = async () => {
-    if (verificationCode.length !== 6) {
-      alert('인증번호 6자리를 입력해주세요.');
-      return;
-    }
-
-    try {
-      const response = await apiClient.post('/auth/verify-email', {
-        email,
-        code: verificationCode.trim(),
-      });
-
-      if (response.status === 200) {
-        setEmailVerified(true);
-        setShowSuccessModal(true);
-        setVerifyCodeBtnText('인증완료');
-        setVerifyCodeBtnDisabled(true);
-        
-        if (countdownTimerRef.current) {
-          clearInterval(countdownTimerRef.current);
-        }
-      }
-    } catch (error) {
-      console.error('인증번호 확인 에러:', error);
-      const message = error.response?.data?.detail || '인증번호 확인 중 오류가 발생했습니다.';
-      alert(message);
-    }
-  };
-
-  // 비밀번호 유효성 검사
-  const validatePassword = (pwd) => {
-    const lengthValid = pwd.length >= 6 && pwd.length <= 32;
-    
-    const patterns = [
-      /[A-Z]/,  // 대문자
-      /[a-z]/,  // 소문자
-      /[0-9]/,  // 숫자
-      /[!@#$%^&*(),.?":{}|<>]/,  // 특수문자
-    ];
-    
-    const matchCount = patterns.filter(pattern => pattern.test(pwd)).length;
-    const complexityValid = matchCount >= 2;
-
+  const validatePassword = (value) => {
+    const lengthValid = value.length >= 6 && value.length <= 32;
+    const complexityValid = [/[A-Z]/, /[a-z]/, /[0-9]/, /[!@#$%^&*(),.?":{}|<>]/].filter((pattern) => pattern.test(value)).length >= 2;
     setPasswordValidation({ length: lengthValid, complexity: complexityValid });
-    setPasswordValid(lengthValid && complexityValid);
-    
-    // 비밀번호 재확인도 다시 체크
-    if (passwordConfirm) {
-      setPasswordMatch(pwd === passwordConfirm);
-    }
+    const success = value === passwordConfirm && value.length > 0;
+    setPasswordMatch(success);
+    setPasswordConfirmMessage({ visible: passwordConfirm.length > 0, success });
   };
 
-  // 비밀번호 입력 핸들러
   const handlePasswordChange = (value) => {
+    if (registrationPending) return;
     setPassword(value);
     validatePassword(value);
   };
 
-  // 비밀번호 재확인 핸들러
   const handlePasswordConfirmChange = (value) => {
+    if (registrationPending) return;
     setPasswordConfirm(value);
-    const match = value === password;
-    setPasswordMatch(match);
-    setPasswordConfirmMessage({
-      type: match ? 'success' : 'error',
-      visible: value.length > 0,
-    });
+    const success = value === password && value.length > 0;
+    setPasswordMatch(success);
+    setPasswordConfirmMessage({ visible: value.length > 0, success });
   };
 
-  // 닉네임 유효성 검사
-  const validateNickname = (nick) => {
-    if (nick.length < 2 || nick.length > 15) return false;
-    return /^[가-힣a-zA-Z0-9]+$/.test(nick);
-  };
+  const validateNicknameFormat = (value) => value.length >= 2 && value.length <= 15 && /^[가-힣a-zA-Z0-9]+$/.test(value);
 
-  // 닉네임 중복확인
   const handleCheckNickname = async () => {
+    if (registrationPending) return;
+
     if (!nickname) {
-      alert('닉네임을 입력해주세요.');
+      setNicknameError('닉네임을 입력해주세요.');
+      setNicknameSuccess(false);
+      setNicknameChecked(false);
       return;
     }
 
-    if (!validateNickname(nickname)) {
-      setNicknameError('닉네임은 2-15자 사이의 한글, 영문, 숫자만 사용 가능합니다.');
+    if (!validateNicknameFormat(nickname)) {
+      setNicknameError('닉네임은 2-15자, 한글/영문/숫자만 사용 가능합니다.');
       setNicknameSuccess(false);
       setNicknameChecked(false);
       return;
@@ -306,104 +139,76 @@ export default function Register() {
 
     try {
       const response = await apiClient.post('/auth/check-nickname', { nickname });
-      
       if (response.status === 200) {
         setNicknameSuccess(true);
         setNicknameError('');
         setNicknameChecked(true);
       }
-    } catch (error) {
-      const message = error.response?.data?.detail || '닉네임이 중복되거나 조건에 맞지 않습니다';
+    } catch (err) {
+      const message = err.response?.data?.detail || '닉네임이 중복되거나 사용할 수 없습니다.';
       setNicknameError(message);
       setNicknameSuccess(false);
       setNicknameChecked(false);
     }
   };
 
-  // 약관 모달 표시
   const handleShowTermsModal = async (type) => {
     setCurrentTermsType(type);
-    
+
     const titles = {
       terms: '서비스 이용약관',
       privacy: '개인정보처리방침',
       collection: '개인정보 수집 및 이용동의',
       marketing: '마케팅정보 수집 및 이용동의',
     };
-    
+
     setTermsModalTitle(titles[type] || '약관 내용');
     setShowTermsModal(true);
 
     try {
       const response = await apiClient.get(`/settings/${type}`);
-      if (response.data && response.data.content) {
+      if (response.data?.content) {
         setTermsModalContent(response.data.content);
-        
-        // Toast UI Editor 렌더링
-        setTimeout(() => {
-          if (window.toastui?.Editor) {
-            const container = document.getElementById('termsModalContent');
-            if (container) {
-              const existingViewer = container.querySelector('.toastui-editor');
-              if (existingViewer) {
-                existingViewer.remove();
-              }
-              
-              try {
-                new window.toastui.Editor({
-                  el: container,
-                  initialValue: response.data.content,
-                  viewer: true,
-                });
-              } catch (error) {
-                console.error('Toast UI Editor 렌더링 실패:', error);
-              }
-            }
-          }
-        }, 100);
+      } else {
+        setTermsModalContent('<div class="text-center py-8 text-gray-500">약관 내용을 불러올 수 없습니다.</div>');
       }
-    } catch (error) {
+    } catch (err) {
       setTermsModalContent('<div class="text-center py-8 text-red-500">약관 내용을 불러올 수 없습니다.</div>');
     }
   };
 
-  // 약관 모달에서 동의하기
   const agreeFromModal = () => {
-    if (!currentTermsType) return;
+    if (!currentTermsType) {
+      setShowTermsModal(false);
+      return;
+    }
 
-    const checkboxId = `agree-${currentTermsType}`;
-    const checkbox = document.getElementById(checkboxId);
-    
-    if (checkbox) {
-      checkbox.checked = true;
+    if (!registrationPending) {
       if (currentTermsType === 'terms') setAgreeTerms(true);
-      else if (currentTermsType === 'privacy') setAgreePrivacy(true);
-      else if (currentTermsType === 'collection') setAgreeCollection(true);
-      else if (currentTermsType === 'marketing') setAgreeMarketing(true);
+      if (currentTermsType === 'privacy') setAgreePrivacy(true);
+      if (currentTermsType === 'collection') setAgreeCollection(true);
+      if (currentTermsType === 'marketing') setAgreeMarketing(true);
     }
 
     setShowTermsModal(false);
   };
 
-  // 회원가입 제출 가능 여부 확인
-  const canSubmit = () => {
-    return emailChecked && emailVerified &&
-           passwordValid && passwordMatch &&
-           nicknameChecked &&
-           agreeTerms && agreePrivacy && agreeCollection;
-  };
+  const canSubmit = () =>
+    !registrationPending &&
+    emailChecked &&
+    passwordValidation.length &&
+    passwordValidation.complexity &&
+    passwordMatch &&
+    nicknameChecked &&
+    agreeTerms &&
+    agreePrivacy &&
+    agreeCollection;
 
-  // 폼 제출
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
     if (!canSubmit()) {
       alert('모든 필수 항목을 올바르게 입력해주세요.');
-      return;
-    }
-
-    if (!emailVerified) {
-      alert('이메일 인증을 완료해주세요.');
       return;
     }
 
@@ -414,7 +219,6 @@ export default function Register() {
       const response = await apiClient.post('/auth/register', {
         email,
         password,
-        passwordConfirm,
         nickname,
         agreeTerms,
         agreePrivacy,
@@ -422,12 +226,14 @@ export default function Register() {
         agreeMarketing,
       });
 
-      if (response.status === 200) {
-        alert('회원가입이 완료되었습니다!');
-        navigate('/login');
-      }
-    } catch (error) {
-      const message = error.response?.data?.detail || '회원가입 중 오류가 발생했습니다.';
+      setPendingEmail(email);
+      setPendingMessage(
+        response.data?.message || '입력하신 이메일 주소로 인증 링크를 보냈습니다. 메일을 확인하여 가입을 완료해주세요.',
+      );
+      setRegistrationPending(true);
+      setShowPendingModal(true);
+    } catch (err) {
+      const message = err.response?.data?.detail || '회원가입 중 오류가 발생했습니다.';
       setError(message);
       alert(message);
     } finally {
@@ -435,197 +241,96 @@ export default function Register() {
     }
   };
 
-  // 인증번호 입력 시 숫자만 허용
-  const handleVerificationCodeChange = (value) => {
-    const numericValue = value.replace(/[^0-9]/g, '').slice(0, 6);
-    setVerificationCode(numericValue);
-    setVerifyCodeBtnDisabled(numericValue.length !== 6);
-  };
-
-  // 재전송
-  const handleResendCode = async () => {
-    setShowResendBtn(false);
-    setSendCodeBtnText('재전송 중...');
-    setSendCodeBtnDisabled(true);
-
-    try {
-      const response = await apiClient.post('/auth/send-code', { email });
-      
-      if (response.status === 200) {
-        setTimeLeft(180);
-        startCountdown();
-        setSendCodeBtnText('인증번호 전송');
-        setSendCodeBtnDisabled(false);
-        alert('인증번호가 재발송되었습니다.');
-      }
-    } catch (error) {
-      const message = error.response?.data?.detail || '인증번호 재발송에 실패했습니다.';
-      alert(message);
-      setSendCodeBtnText('인증번호 전송');
-      setSendCodeBtnDisabled(false);
-    }
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  const submitLabel = registrationPending ? '이메일을 확인해주세요' : isLoading ? '처리 중...' : '회원가입';
 
   return (
-    <div className="flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 min-h-full">
-      <div className="max-w-lg w-full space-y-8">
-        {/* 헤더 */}
+    <div className="flex min-h-full items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-lg space-y-8">
         <div>
-          <div
-            className="mx-auto h-12 w-12 flex items-center justify-center rounded-full"
-            style={{ backgroundColor: primary }}
-          >
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full" style={{ backgroundColor: primary }}>
             <i className="fas fa-user-plus text-white text-xl"></i>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            회원가입
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            강민성 한국사의 회원가입 페이지입니다.
-          </p>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">회원가입</h2>
+          <p className="mt-2 text-center text-sm text-gray-600">강민성 한국사의 회원가입 페이지입니다.</p>
         </div>
 
-        {/* 회원가입 폼 */}
+        {registrationPending && (
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700">
+            <strong>{pendingEmail}</strong> 주소로 인증 링크를 발송했습니다. 메일을 확인하고 가입을 완료해주세요.
+          </div>
+        )}
+
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>
+        )}
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
-            {/* 이메일 */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 이메일
               </label>
-              <div className="flex space-x-2 mt-1">
+              <div className="mt-1 flex space-x-2">
                 <input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
+                  disabled={isFieldDisabled}
                   value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
+                  onChange={(event) => {
+                    if (registrationPending) return;
+                    setEmail(event.target.value);
                     setEmailChecked(false);
                     setEmailCheckResult({ type: '', message: '' });
-                    setSendCodeBtnDisabled(true);
                   }}
-                  className="flex-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm"
-                  style={{
-                    borderColor: input.border,
-                    transition: input.transition,
+                  className="relative block w-full flex-1 appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 sm:text-sm"
+                  style={{ borderColor: input.border, transition: input.transition }}
+                  onFocus={(event) => {
+                    if (registrationPending) return;
+                    event.target.style.borderColor = primary;
+                    event.target.style.boxShadow = '0 0 0 3px rgba(6, 31, 64, 0.1)';
                   }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = primary;
-                    e.target.style.boxShadow = `0 0 0 3px rgba(6, 31, 64, 0.1)`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = input.border;
-                    e.target.style.boxShadow = 'none';
+                  onBlur={(event) => {
+                    event.target.style.borderColor = input.border;
+                    event.target.style.boxShadow = 'none';
                   }}
                   placeholder="이메일 주소"
                 />
                 <button
                   type="button"
                   onClick={handleCheckEmail}
-                  className="px-4 py-2 border rounded-md transition-colors duration-200 text-sm"
-                  style={{
-                    borderColor: primary,
-                    color: primary,
+                  disabled={isFieldDisabled}
+                  className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-offset-1"
+                  style={{ backgroundColor: primary, borderColor: primary }}
+                  onMouseEnter={(event) => {
+                    if (event.currentTarget.disabled) return;
+                    event.currentTarget.style.backgroundColor = secondary;
+                    event.currentTarget.style.boxShadow = '0 6px 12px rgba(37, 99, 235, 0.25)';
                   }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = primary;
-                    e.target.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
-                    e.target.style.color = primary;
+                  onMouseLeave={(event) => {
+                    event.currentTarget.style.backgroundColor = primary;
+                    event.currentTarget.style.boxShadow = 'none';
                   }}
                 >
                   중복확인
                 </button>
-                <button
-                  type="button"
-                  onClick={handleSendVerificationCode}
-                  disabled={sendCodeBtnDisabled}
-                  className="px-4 py-2 rounded-md transition-colors duration-200 text-sm text-white"
-                  style={{
-                    backgroundColor: sendCodeBtnDisabled ? '#9CA3AF' : '#1F2937',
-                  }}
-                >
-                  {sendCodeBtnText}
-                </button>
               </div>
               {emailCheckResult.message && (
-                <div className={`mt-1 text-xs flex items-center ${
-                  emailCheckResult.type === 'success' ? 'text-green-500' : 'text-red-500'
-                }`}>
-                  <i className={`fas ${emailCheckResult.type === 'success' ? 'fa-check' : 'fa-times'} mr-2 w-4`}></i>
+                <div
+                  className={`mt-1 flex items-center text-xs ${
+                    emailCheckResult.type === 'success' ? 'text-green-500' : 'text-red-500'
+                  }`}
+                >
+                  <i
+                    className={`fas ${emailCheckResult.type === 'success' ? 'fa-check' : 'fa-times'} mr-2 w-4`}
+                  ></i>
                   <span>{emailCheckResult.message}</span>
                 </div>
               )}
             </div>
 
-            {/* 인증번호 섹션 */}
-            <div
-              className={`block mt-4 ${verificationSectionEnabled ? 'opacity-100' : 'opacity-50'}`}
-            >
-              <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700">
-                인증번호
-              </label>
-              <div className="flex space-x-2 mt-1">
-                <input
-                  id="verificationCode"
-                  name="verificationCode"
-                  type="text"
-                  maxLength={6}
-                  value={verificationCode}
-                  onChange={(e) => handleVerificationCodeChange(e.target.value)}
-                  disabled={!verificationSectionEnabled || emailVerified}
-                  className="flex-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm text-left"
-                  style={{
-                    borderColor: input.border,
-                    backgroundColor: !verificationSectionEnabled || emailVerified ? '#F3F4F6' : 'white',
-                    cursor: !verificationSectionEnabled || emailVerified ? 'not-allowed' : 'text',
-                  }}
-                  placeholder="인증번호 6자리를 입력하세요."
-                />
-                <button
-                  type="button"
-                  onClick={handleVerifyCode}
-                  disabled={verifyCodeBtnDisabled || emailVerified}
-                  className="px-4 py-2 rounded-md transition-colors duration-200 text-sm text-white"
-                  style={{
-                    backgroundColor: verifyCodeBtnDisabled || emailVerified ? '#9CA3AF' : '#059669',
-                  }}
-                >
-                  {verifyCodeBtnText}
-                </button>
-              </div>
-              <div className="mt-2 flex justify-between items-center">
-                {timeLeft > 0 ? (
-                  <p className="text-xs text-blue-500">
-                    인증번호는 <strong>{formatTime(timeLeft)}</strong> 후 만료됩니다
-                  </p>
-                ) : (
-                  <p className="text-xs text-red-500">인증번호가 만료되었습니다</p>
-                )}
-                {showResendBtn && (
-                  <button
-                    type="button"
-                    onClick={handleResendCode}
-                    className="text-xs text-red-500 hover:text-red-700"
-                  >
-                    재전송
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* 비밀번호 */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 비밀번호
@@ -636,37 +341,40 @@ export default function Register() {
                 type="password"
                 autoComplete="new-password"
                 required
+                disabled={isFieldDisabled}
                 value={password}
-                onChange={(e) => handlePasswordChange(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm"
-                style={{
-                  borderColor: input.border,
-                  transition: input.transition,
+                onChange={(event) => handlePasswordChange(event.target.value)}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 sm:text-sm"
+                style={{ borderColor: input.border, transition: input.transition }}
+                onFocus={(event) => {
+                  if (registrationPending) return;
+                  event.target.style.borderColor = primary;
+                  event.target.style.boxShadow = '0 0 0 3px rgba(6, 31, 64, 0.1)';
                 }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = primary;
-                  e.target.style.boxShadow = `0 0 0 3px rgba(6, 31, 64, 0.1)`;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = input.border;
-                  e.target.style.boxShadow = 'none';
+                onBlur={(event) => {
+                  event.target.style.borderColor = input.border;
+                  event.target.style.boxShadow = 'none';
                 }}
                 placeholder="비밀번호를 입력하세요."
               />
               {password && (
-                <div className="mt-1 text-xs space-y-1">
+                <div className="mt-1 space-y-1 text-xs">
                   <div className="flex items-center">
-                    <i className={`fas ${passwordValidation.length ? 'fa-check' : 'fa-times'} mr-2 w-4 ${
-                      passwordValidation.length ? 'text-green-500' : 'text-red-500'
-                    }`}></i>
+                    <i
+                      className={`fas ${
+                        passwordValidation.length ? 'fa-check' : 'fa-times'
+                      } mr-2 w-4 ${passwordValidation.length ? 'text-green-500' : 'text-red-500'}`}
+                    ></i>
                     <span className={passwordValidation.length ? 'text-green-500' : 'text-red-500'}>
                       6-32자 사이
                     </span>
                   </div>
                   <div className="flex items-center">
-                    <i className={`fas ${passwordValidation.complexity ? 'fa-check' : 'fa-times'} mr-2 w-4 ${
-                      passwordValidation.complexity ? 'text-green-500' : 'text-red-500'
-                    }`}></i>
+                    <i
+                      className={`fas ${
+                        passwordValidation.complexity ? 'fa-check' : 'fa-times'
+                      } mr-2 w-4 ${passwordValidation.complexity ? 'text-green-500' : 'text-red-500'}`}
+                    ></i>
                     <span className={passwordValidation.complexity ? 'text-green-500' : 'text-red-500'}>
                       영문 대·소문자, 숫자, 특수문자 중 최소 2가지 이상
                     </span>
@@ -675,7 +383,6 @@ export default function Register() {
               )}
             </div>
 
-            {/* 비밀번호 재확인 */}
             <div>
               <label htmlFor="passwordConfirm" className="block text-sm font-medium text-gray-700">
                 비밀번호 재확인
@@ -686,26 +393,25 @@ export default function Register() {
                 type="password"
                 autoComplete="new-password"
                 required
+                disabled={isFieldDisabled}
                 value={passwordConfirm}
-                onChange={(e) => handlePasswordConfirmChange(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm"
-                style={{
-                  borderColor: input.border,
-                  transition: input.transition,
+                onChange={(event) => handlePasswordConfirmChange(event.target.value)}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 sm:text-sm"
+                style={{ borderColor: input.border, transition: input.transition }}
+                onFocus={(event) => {
+                  if (registrationPending) return;
+                  event.target.style.borderColor = primary;
+                  event.target.style.boxShadow = '0 0 0 3px rgba(6, 31, 64, 0.1)';
                 }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = primary;
-                  e.target.style.boxShadow = `0 0 0 3px rgba(6, 31, 64, 0.1)`;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = input.border;
-                  e.target.style.boxShadow = 'none';
+                onBlur={(event) => {
+                  event.target.style.borderColor = input.border;
+                  event.target.style.boxShadow = 'none';
                 }}
                 placeholder="비밀번호를 다시 입력해주세요."
               />
               {passwordConfirmMessage.visible && (
-                <div className="mt-1 text-xs flex items-center">
-                  {passwordConfirmMessage.type === 'success' ? (
+                <div className="mt-1 flex items-center text-xs">
+                  {passwordConfirmMessage.success ? (
                     <>
                       <i className="fas fa-check mr-2 w-4 text-green-500"></i>
                       <span className="text-green-500">비밀번호가 일치합니다.</span>
@@ -720,54 +426,52 @@ export default function Register() {
               )}
             </div>
 
-            {/* 닉네임 */}
             <div>
               <label htmlFor="nickname" className="block text-sm font-medium text-gray-700">
                 닉네임
               </label>
-              <div className="flex space-x-2 mt-1">
+              <div className="mt-1 flex space-x-2">
                 <input
                   id="nickname"
                   name="nickname"
                   type="text"
                   required
+                  disabled={isFieldDisabled}
                   value={nickname}
-                  onChange={(e) => {
-                    setNickname(e.target.value);
+                  onChange={(event) => {
+                    if (registrationPending) return;
+                    setNickname(event.target.value);
                     setNicknameChecked(false);
                     setNicknameError('');
                     setNicknameSuccess(false);
                   }}
-                  className="flex-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm"
-                  style={{
-                    borderColor: input.border,
-                    transition: input.transition,
+                  className="relative block w-full flex-1 appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 sm:text-sm"
+                  style={{ borderColor: input.border, transition: input.transition }}
+                  onFocus={(event) => {
+                    if (registrationPending) return;
+                    event.target.style.borderColor = primary;
+                    event.target.style.boxShadow = '0 0 0 3px rgba(6, 31, 64, 0.1)';
                   }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = primary;
-                    e.target.style.boxShadow = `0 0 0 3px rgba(6, 31, 64, 0.1)`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = input.border;
-                    e.target.style.boxShadow = 'none';
+                  onBlur={(event) => {
+                    event.target.style.borderColor = input.border;
+                    event.target.style.boxShadow = 'none';
                   }}
                   placeholder="닉네임을 입력하세요."
                 />
                 <button
                   type="button"
                   onClick={handleCheckNickname}
-                  className="px-4 py-2 border rounded-md transition-colors duration-200 text-sm"
-                  style={{
-                    borderColor: primary,
-                    color: primary,
+                  disabled={isFieldDisabled}
+                  className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-offset-1"
+                  style={{ backgroundColor: primary, borderColor: primary }}
+                  onMouseEnter={(event) => {
+                    if (event.currentTarget.disabled) return;
+                    event.currentTarget.style.backgroundColor = secondary;
+                    event.currentTarget.style.boxShadow = '0 6px 12px rgba(37, 99, 235, 0.25)';
                   }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = primary;
-                    e.target.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
-                    e.target.style.color = primary;
+                  onMouseLeave={(event) => {
+                    event.currentTarget.style.backgroundColor = primary;
+                    event.currentTarget.style.boxShadow = 'none';
                   }}
                 >
                   중복확인
@@ -783,17 +487,16 @@ export default function Register() {
             </div>
           </div>
 
-          {/* 약관 동의 섹션 */}
           <div className="space-y-3">
-            {/* 전체 동의 */}
-            <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center rounded-lg bg-gray-50 p-3">
               <input
                 id="agree-all"
                 name="agree-all"
                 type="checkbox"
                 checked={agreeAll}
-                onChange={(e) => handleAgreeAll(e.target.checked)}
-                className="h-4 w-4 border-gray-300 rounded"
+                disabled={registrationPending}
+                onChange={(event) => handleAgreeAll(event.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
                 style={{ accentColor: primary }}
               />
               <label htmlFor="agree-all" className="ml-2 block text-sm font-medium text-gray-900">
@@ -801,129 +504,67 @@ export default function Register() {
               </label>
             </div>
 
-            {/* 개별 약관 동의 */}
             <div className="space-y-2 pl-4">
-              <div className="flex items-center">
-                <input
-                  id="agree-terms"
-                  name="agree-terms"
-                  type="checkbox"
-                  required
-                  checked={agreeTerms}
-                  onChange={(e) => setAgreeTerms(e.target.checked)}
-                  className="h-4 w-4 border-gray-300 rounded"
-                  style={{ accentColor: primary }}
-                />
-                <label htmlFor="agree-terms" className="ml-2 block text-sm text-gray-900">
-                  서비스 이용약관에 동의합니다.
-                </label>
-                <button
-                  type="button"
-                  onClick={() => handleShowTermsModal('terms')}
-                  className="ml-2 text-xs text-blue-600 hover:text-blue-800 underline"
-                >
-                  전문보기
-                </button>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  id="agree-privacy"
-                  name="agree-privacy"
-                  type="checkbox"
-                  required
-                  checked={agreePrivacy}
-                  onChange={(e) => setAgreePrivacy(e.target.checked)}
-                  className="h-4 w-4 border-gray-300 rounded"
-                  style={{ accentColor: primary }}
-                />
-                <label htmlFor="agree-privacy" className="ml-2 block text-sm text-gray-900">
-                  개인정보처리방침에 동의합니다.
-                </label>
-                <button
-                  type="button"
-                  onClick={() => handleShowTermsModal('privacy')}
-                  className="ml-2 text-xs text-blue-600 hover:text-blue-800 underline"
-                >
-                  전문보기
-                </button>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  id="agree-collection"
-                  name="agree-collection"
-                  type="checkbox"
-                  required
-                  checked={agreeCollection}
-                  onChange={(e) => setAgreeCollection(e.target.checked)}
-                  className="h-4 w-4 border-gray-300 rounded"
-                  style={{ accentColor: primary }}
-                />
-                <label htmlFor="agree-collection" className="ml-2 block text-sm text-gray-900">
-                  개인정보수집 및 이용동의에 동의합니다.
-                </label>
-                <button
-                  type="button"
-                  onClick={() => handleShowTermsModal('collection')}
-                  className="ml-2 text-xs text-blue-600 hover:text-blue-800 underline"
-                >
-                  전문보기
-                </button>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  id="agree-marketing"
-                  name="agree-marketing"
-                  type="checkbox"
-                  checked={agreeMarketing}
-                  onChange={(e) => setAgreeMarketing(e.target.checked)}
-                  className="h-4 w-4 border-gray-300 rounded"
-                  style={{ accentColor: primary }}
-                />
-                <label htmlFor="agree-marketing" className="ml-2 block text-sm text-gray-900">
-                  마케팅정보 수집 및 이용에 동의합니다. (선택)
-                </label>
-                <button
-                  type="button"
-                  onClick={() => handleShowTermsModal('marketing')}
-                  className="ml-2 text-xs text-blue-600 hover:text-blue-800 underline"
-                >
-                  전문보기
-                </button>
-              </div>
+              {[
+                { id: 'terms', label: '서비스 이용약관에 동의합니다.', required: true, state: agreeTerms, setter: setAgreeTerms },
+                { id: 'privacy', label: '개인정보처리방침에 동의합니다.', required: true, state: agreePrivacy, setter: setAgreePrivacy },
+                { id: 'collection', label: '개인정보수집 및 이용동의에 동의합니다.', required: true, state: agreeCollection, setter: setAgreeCollection },
+                { id: 'marketing', label: '마케팅정보 수집 및 이용에 동의합니다. (선택)', required: false, state: agreeMarketing, setter: setAgreeMarketing },
+              ].map((item) => (
+                <div key={item.id} className="flex items-center">
+                  <input
+                    id={`agree-${item.id}`}
+                    name={`agree-${item.id}`}
+                    type="checkbox"
+                    required={item.required}
+                    checked={item.state}
+                    disabled={registrationPending}
+                    onChange={(event) => {
+                      if (registrationPending) return;
+                      item.setter(event.target.checked);
+                    }}
+                    className="h-4 w-4 rounded border-gray-300"
+                    style={{ accentColor: primary }}
+                  />
+                  <label htmlFor={`agree-${item.id}`} className="ml-2 block text-sm text-gray-900">
+                    {item.label}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleShowTermsModal(item.id)}
+                    className="ml-2 text-xs text-blue-600 underline transition-colors hover:text-blue-800"
+                  >
+                    전문보기
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* 제출 버튼 */}
           <div>
             <button
               type="submit"
               disabled={!canSubmit() || isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60"
               style={{
                 backgroundColor: canSubmit() && !isLoading ? primary : '#9CA3AF',
               }}
-              onMouseEnter={(e) => {
-                if (canSubmit() && !isLoading) {
-                  e.target.style.backgroundColor = secondary;
-                }
+              onMouseEnter={(event) => {
+                if (!canSubmit() || isLoading) return;
+                event.target.style.backgroundColor = secondary;
               }}
-              onMouseLeave={(e) => {
-                if (canSubmit() && !isLoading) {
-                  e.target.style.backgroundColor = primary;
-                }
+              onMouseLeave={(event) => {
+                if (!canSubmit() || isLoading) return;
+                event.target.style.backgroundColor = primary;
               }}
             >
-              <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                 <i className="fas fa-user-plus text-white" aria-hidden="true"></i>
               </span>
-              {isLoading ? '처리 중...' : '회원가입'}
+              {submitLabel}
             </button>
           </div>
 
-          {/* 로그인 링크 */}
           <div className="text-center">
             <p className="text-sm text-gray-600">
               이미 계정이 있으신가요?{' '}
@@ -931,8 +572,8 @@ export default function Register() {
                 to="/login"
                 className="font-medium transition-colors duration-200"
                 style={{ color: primary }}
-                onMouseEnter={(e) => (e.target.style.color = secondary)}
-                onMouseLeave={(e) => (e.target.style.color = primary)}
+                onMouseEnter={(event) => (event.target.style.color = secondary)}
+                onMouseLeave={(event) => (event.target.style.color = primary)}
               >
                 로그인
               </Link>
@@ -941,103 +582,43 @@ export default function Register() {
         </form>
       </div>
 
-      {/* 성공 모달 */}
-      {showSuccessModal && (
-        <div
-          className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-          onClick={() => setShowSuccessModal(false)}
-        >
-          <div
-            className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mt-3 text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                <i className="fas fa-check text-green-600 text-xl"></i>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">인증 완료!</h3>
-              <p className="text-sm text-gray-500 mb-4">이메일 인증이 완료되었습니다.</p>
-              <button
-                onClick={() => setShowSuccessModal(false)}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white transition-colors duration-200"
-                style={{ backgroundColor: primary }}
-                onMouseEnter={(e) => (e.target.style.backgroundColor = secondary)}
-                onMouseLeave={(e) => (e.target.style.backgroundColor = primary)}
-              >
-                확인
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 발송 완료 모달 */}
-      {showSendCompleteModal && (
-        <div
-          className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-          onClick={() => setShowSendCompleteModal(false)}
-        >
-          <div
-            className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mt-3 text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
-                <i className="fas fa-envelope text-blue-600 text-xl"></i>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">발송이 완료되었습니다</h3>
-              <p className="text-sm text-gray-500 mb-4">인증번호가 이메일로 발송되었습니다.</p>
-              <button
-                onClick={() => setShowSendCompleteModal(false)}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-black text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors duration-200 hover:bg-gray-800"
-              >
-                확인
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 약관 모달 */}
       {showTermsModal && (
         <div
-          className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+          className="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600 bg-opacity-50"
           onClick={() => setShowTermsModal(false)}
         >
           <div
-            className="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white"
-            onClick={(e) => e.stopPropagation()}
+            className="relative top-10 mx-auto w-11/12 max-w-4xl rounded-md border bg-white p-5 shadow-lg"
+            onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-medium text-gray-900">{termsModalTitle}</h3>
               <button
                 onClick={() => setShowTermsModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 transition-colors hover:text-gray-600"
               >
                 <i className="fas fa-times text-xl"></i>
               </button>
             </div>
             <div
               id="termsModalContent"
-              className="max-h-96 overflow-y-auto border rounded-lg p-4 bg-white"
+              className="max-h-96 overflow-y-auto rounded-lg border bg-white p-4"
             >
-              {termsModalContent && (
-                <div dangerouslySetInnerHTML={{ __html: termsModalContent }} />
-              )}
+              {termsModalContent && <div dangerouslySetInnerHTML={{ __html: termsModalContent }} />}
             </div>
             <div className="mt-4 flex justify-end space-x-3">
               <button
                 onClick={() => setShowTermsModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-gray-50"
               >
                 닫기
               </button>
               <button
                 onClick={agreeFromModal}
-                className="px-4 py-2 text-white rounded-md text-sm font-medium transition-colors duration-200"
+                className="rounded-md px-4 py-2 text-sm font-medium text-white transition-colors duration-200"
                 style={{ backgroundColor: primary }}
-                onMouseEnter={(e) => (e.target.style.backgroundColor = secondary)}
-                onMouseLeave={(e) => (e.target.style.backgroundColor = primary)}
+                onMouseEnter={(event) => (event.target.style.backgroundColor = secondary)}
+                onMouseLeave={(event) => (event.target.style.backgroundColor = primary)}
               >
                 동의하고 닫기
               </button>
@@ -1045,7 +626,33 @@ export default function Register() {
           </div>
         </div>
       )}
+
+      {showPendingModal && (
+        <div className="fixed inset-0 z-50 flex h-full w-full items-center justify-center bg-gray-900 bg-opacity-50 p-4">
+          <div
+            className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+                <i className="fas fa-envelope-open-text text-blue-600 text-xl"></i>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">이메일을 확인해주세요</h3>
+              <p className="mt-2 text-sm text-gray-600 whitespace-pre-line">{pendingMessage}</p>
+              <div className="mt-6 flex w-full flex-col space-y-3">
+                <Link
+                  to="/login"
+                  className="w-full rounded-md bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                >
+                  로그인 화면으로 이동
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 

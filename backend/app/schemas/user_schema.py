@@ -104,11 +104,6 @@ class UserUpdate(BaseModel):
         
         return v
 
-class EmailVerification(BaseModel):
-    """이메일 인증 스키마"""
-    email: EmailStr
-    code: str
-
 class PasswordChange(BaseModel):
     """비밀번호 변경 스키마"""
     current_password: str

@@ -1,12 +1,16 @@
 # app/services/auth_service.py
 from fastapi import HTTPException, status, Request
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
-from app.models import User, EmailVerification as EmailVerificationModel, Notification
+from datetime import datetime, timedelta, timezone
+from app.models import User, TempUser, Notification
 from app.utils.auth import get_password_hash, verify_password, create_access_token
 from app.utils.auth import set_auth_cookie, clear_auth_cookie
-import random, string, os, jwt
-from app.services.email_service import send_verification_email, send_password_reset_email
+import jwt, secrets
+from app.services.email_service import (
+    send_password_reset_email,
+    send_signup_confirmation_email,
+    send_welcome_email,
+)
 from app.config import settings
 
 # ===== 수동 검증 유틸 =====
@@ -28,9 +32,9 @@ def _validate_nickname_rules(nick: str):
 # ===== 회원가입 / 로그인 / 로그아웃 =====
 async def register_service(request, db: Session):
     data = await request.json()
-    email = data.get("email")
+    email = (data.get("email") or "").strip()
     password = data.get("password")
-    nickname = data.get("nickname")
+    nickname = (data.get("nickname") or "").strip()
     # camelCase와 snake_case 둘 다 지원
     agree_terms = bool(data.get("agree_terms") or data.get("agreeTerms", False))
     agree_privacy = bool(data.get("agree_privacy") or data.get("agreePrivacy", False))
@@ -44,41 +48,147 @@ async def register_service(request, db: Session):
     if not (agree_terms and agree_privacy and agree_collection):
         raise HTTPException(400, "필수 약관 동의가 필요합니다.")
 
-    from app.services.user_service import get_user_by_email, get_user_by_nickname
-    if get_user_by_email(db, email):
+    from app.services.user_service import (
+        get_user_by_email,
+        get_user_by_nickname,
+        get_user_by_email_for_registration,
+        get_user_by_nickname_for_registration,
+    )
+
+    # 이미 가입된 사용자/차단 사용자 확인
+    if get_user_by_email(db, email) or get_user_by_email_for_registration(db, email):
         raise HTTPException(409, "이미 등록된 이메일입니다.")
     blocked = db.query(User).filter(User.email == email, User.is_blocked == True).first()
     if blocked:
         raise HTTPException(403, "가입 불가능한 이메일입니다. 관리자에게 문의하세요.")
-    if get_user_by_nickname(db, nickname):
+    if get_user_by_nickname(db, nickname) or get_user_by_nickname_for_registration(db, nickname):
         raise HTTPException(409, "이미 사용 중인 닉네임입니다.")
 
     hashed = get_password_hash(password)
-    user = User(
-        email=email, password_hash=hashed, nickname=nickname, role="member",
-        is_active=True, is_email_verified=True,
-        created_at=datetime.now(),
-        agree_terms=agree_terms, agree_privacy=agree_privacy,
-        agree_collection=agree_collection, agree_marketing=agree_marketing
+    token = secrets.token_urlsafe(48)
+    now = datetime.now(timezone.utc)
+    expire_minutes = max(int(getattr(settings, "EMAIL_VERIFICATION_EXPIRE_MINUTES", 60 * 24)), 1)
+    expires_at = now + timedelta(minutes=expire_minutes)
+
+    temp_user = db.query(TempUser).filter(TempUser.email == email).first()
+
+    # 별도 닉네임 중복 체크 (다른 이메일이 동일 닉네임으로 대기중인 경우)
+    nickname_conflict = (
+        db.query(TempUser)
+        .filter(
+            TempUser.nickname == nickname,
+            TempUser.email != email,
+            TempUser.expires_at > now,
+        )
+        .first()
     )
+    if nickname_conflict:
+        raise HTTPException(409, "이미 사용 중인 닉네임입니다.")
+
+    if temp_user:
+        temp_user.password_hash = hashed
+        temp_user.nickname = nickname
+        temp_user.verification_token = token
+        temp_user.expires_at = expires_at
+        temp_user.agree_terms = agree_terms
+        temp_user.agree_privacy = agree_privacy
+        temp_user.agree_collection = agree_collection
+        temp_user.agree_marketing = agree_marketing
+    else:
+        temp_user = TempUser(
+            email=email,
+            password_hash=hashed,
+            nickname=nickname,
+            verification_token=token,
+            expires_at=expires_at,
+            agree_terms=agree_terms,
+            agree_privacy=agree_privacy,
+            agree_collection=agree_collection,
+            agree_marketing=agree_marketing,
+        )
+        db.add(temp_user)
+
+    db.commit()
+
+    signup_link = f"{settings.FRONTEND_URL.rstrip('/')}/register/confirm?token={token}"
+
+    try:
+        await send_signup_confirmation_email(email, nickname, signup_link, expires_at)
+    except Exception as e:
+        # 이메일 발송 실패 시, 사용자가 재시도할 수 있도록 에러 반환
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            f"인증 이메일 발송 중 오류가 발생했습니다: {str(e)}",
+        )
+
+    return {
+        "message": "입력하신 이메일 주소로 인증 링크를 보냈습니다. 메일을 확인하여 가입을 완료해주세요."
+    }
+
+
+async def verify_signup_token_service(token: str, db: Session):
+    if not token:
+        raise HTTPException(400, "토큰이 필요합니다.")
+
+    temp_user = db.query(TempUser).filter(TempUser.verification_token == token).first()
+    if not temp_user:
+        raise HTTPException(400, "토큰이 만료되었거나 유효하지 않습니다. 다시 회원가입을 진행해주세요.")
+
+    now = datetime.now(timezone.utc)
+    if temp_user.expires_at < now:
+        db.delete(temp_user)
+        db.commit()
+        raise HTTPException(400, "토큰이 만료되었습니다. 다시 회원가입을 진행해주세요.")
+
+    from app.services.user_service import (
+        get_user_by_email_for_registration,
+        get_user_by_nickname_for_registration,
+    )
+
+    if get_user_by_email_for_registration(db, temp_user.email):
+        db.delete(temp_user)
+        db.commit()
+        raise HTTPException(409, "이미 등록된 이메일입니다.")
+
+    if get_user_by_nickname_for_registration(db, temp_user.nickname):
+        db.delete(temp_user)
+        db.commit()
+        raise HTTPException(409, "이미 사용 중인 닉네임입니다.")
+
+    user = User(
+        email=temp_user.email,
+        password_hash=temp_user.password_hash,
+        nickname=temp_user.nickname,
+        role="member",
+        is_active=True,
+        is_email_verified=True,
+        created_at=datetime.now(timezone.utc),
+        agree_terms=temp_user.agree_terms,
+        agree_privacy=temp_user.agree_privacy,
+        agree_collection=temp_user.agree_collection,
+        agree_marketing=temp_user.agree_marketing,
+    )
+
     db.add(user)
+    db.flush()
+
+    notification = Notification(
+        type="user_joined",
+        title=f"{user.nickname}님이 가입했습니다",
+        content=f"새로운 사용자가 가입했습니다. 이메일: {user.email}",
+        related_id=user.id,
+        created_at=datetime.now(),
+    )
+
+    db.add(notification)
+    db.delete(temp_user)
     db.commit()
     db.refresh(user)
 
-    # ✅ 회원가입 알림(Notification) 생성
     try:
-        notification = Notification(
-            type="user_joined",
-            title=f"{user.nickname}님이 가입했습니다",
-            content=f"새로운 사용자가 가입했습니다. 이메일: {user.email}",
-            related_id=user.id,
-            created_at=datetime.now(),
-        )
-        db.add(notification)
-        db.commit()
+        await send_welcome_email(user.email, user.nickname)
     except Exception as e:
-        # 알림 생성 실패해도 회원가입은 유지
-        print(f"[⚠️ 회원가입 알림 생성 실패] {str(e)}")
+        print(f"[⚠️ 환영 이메일 발송 실패] {str(e)}")
 
     return {"message": "회원가입이 완료되었습니다.", "user_id": user.id}
 
@@ -133,117 +243,6 @@ def logout_service(response):
     clear_auth_cookie(response)
     return {"message": "로그아웃 되었습니다."}
 
-# ===== 이메일 인증 코드 생성 =====
-def _gen_code():
-    return ''.join(random.choices(string.digits, k=6))
-
-# ===== 인증 코드 발송 =====
-async def send_verification_code_service(request: Request, db: Session):
-    data = await request.json()
-    email = data.get("email")
-    if not email:
-        raise HTTPException(400, "이메일은 필수입니다.")
-
-    # 이미 가입된 이메일인지 확인
-    existing = db.query(User).filter(
-        User.email == email,
-        User.is_active == True,
-        User.is_email_verified == True
-    ).first()
-    if existing:
-        raise HTTPException(409, "이미 가입된 이메일입니다.")
-
-    # 인증 코드 생성
-    code = _gen_code()
-    from datetime import timezone
-    expires = datetime.now(timezone.utc) + timedelta(minutes=3)
-
-    ev = db.query(EmailVerificationModel).filter(
-        EmailVerificationModel.email == email
-    ).first()
-
-    if ev:
-        ev.verification_code = code
-        ev.expires_at = expires
-    else:
-        ev = EmailVerificationModel(
-            email=email,
-            verification_code=code,
-            expires_at=expires
-        )
-        db.add(ev)
-
-    db.commit()
-
-    # ✅ 실제 메일 발송 로직 연결
-    try:
-        await send_verification_email(email, code)
-    except Exception as e:
-        import traceback
-        error_detail = f"이메일 발송 중 오류 발생: {str(e)}"
-        print(f"[ERROR] {error_detail}")
-        print(traceback.format_exc())
-        raise HTTPException(500, error_detail)
-
-    return {"message": "인증 코드가 이메일로 발송되었습니다."}
-
-
-# ===== 인증 코드 검증 =====
-async def verify_email_code_service(request: Request, db: Session):
-    try:
-        data = await request.json()
-        email = data.get("email")
-        code = data.get("code")
-
-        if not email or not code:
-            raise HTTPException(400, "이메일/코드는 필수입니다.")
-
-        # 최신 인증 코드 조회 (id 내림차순으로 최신 것 가져오기)
-        ev = db.query(EmailVerificationModel).filter(
-            EmailVerificationModel.email == email
-        ).order_by(EmailVerificationModel.id.desc()).first()
-
-        if not ev:
-            raise HTTPException(404, "인증 정보를 찾을 수 없습니다. 인증번호를 다시 발송해주세요.")
-        
-        # 디버깅: 코드 값 확인
-        stored_code = str(ev.verification_code).strip()
-        input_code = str(code).strip()
-        
-        print(f"[DEBUG] 인증 코드 확인 - 이메일: {email}, 입력: '{input_code}' (len={len(input_code)}), 저장: '{stored_code}' (len={len(stored_code)})")
-        
-        # 코드 비교 (문자열 비교, 공백 제거)
-        if stored_code != input_code:
-            raise HTTPException(400, "인증 코드가 일치하지 않습니다. 다시 확인해주세요.")
-        
-        # 만료 시간 확인 (타임존 고려)
-        from datetime import timezone
-        # expires_at이 timezone-aware이면 now도 timezone-aware로 만들어야 함
-        if ev.expires_at.tzinfo:
-            now = datetime.now(timezone.utc)
-        else:
-            now = datetime.now()
-        if ev.expires_at < now:
-            raise HTTPException(400, "인증 코드가 만료되었습니다. 인증번호를 다시 발송해주세요.")
-
-        # 인증 성공 → 기록 삭제
-        db.delete(ev)
-        db.commit()
-
-        return {"message": "이메일 인증이 완료되었습니다."}
-    except HTTPException as he:
-        # HTTPException은 그대로 전달
-        raise he
-    except Exception as e:
-        import traceback
-        error_msg = f"[ERROR] verify_email_code_service 에러: {str(e)}"
-        print(error_msg)
-        traceback.print_exc()
-        # 상세 에러 메시지 제공 (개발 중 디버깅용)
-        detail_msg = f"인증 확인 중 오류가 발생했습니다: {str(e)}"
-        raise HTTPException(status_code=500, detail=detail_msg)
-
-
 async def check_email_duplicate_service(request, db: Session):
     """회원가입 전 이메일 중복 확인"""
     import re
@@ -270,6 +269,20 @@ async def check_email_duplicate_service(request, db: Session):
         
         if existing_user:
             raise HTTPException(status_code=409, detail="이미 사용 중인 이메일입니다.")
+
+        now = datetime.now(timezone.utc)
+        temp_user = (
+            db.query(TempUser)
+            .filter(TempUser.email == email, TempUser.expires_at > now)
+            .first()
+        )
+        print(f"[DEBUG] temp_user 조회 완료: {temp_user is not None}")
+
+        if temp_user:
+            raise HTTPException(
+                status_code=409,
+                detail="이미 가입 진행 중인 이메일입니다. 이메일을 확인해주세요.",
+            )
 
         deleted_user = get_user_by_email_for_registration(db, email)
         print(f"[DEBUG] deleted_user 조회 완료: {deleted_user is not None}")
@@ -312,6 +325,15 @@ async def check_nickname_duplicate_service(request, db: Session):
             raise HTTPException(status_code=409, detail="최근 탈퇴한 사용자입니다. 다른 닉네임을 사용해주세요.")
         else:
             raise HTTPException(status_code=409, detail="현재 이 닉네임은 사용할 수 없습니다.")
+
+    now = datetime.now(timezone.utc)
+    temp_user = (
+        db.query(TempUser)
+        .filter(TempUser.nickname == nickname, TempUser.expires_at > now)
+        .first()
+    )
+    if temp_user:
+        raise HTTPException(status_code=409, detail="이미 사용 중인 닉네임입니다.")
 
     return {"message": "사용 가능한 닉네임입니다."}
 

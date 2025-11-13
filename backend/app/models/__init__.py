@@ -1,5 +1,5 @@
 # 각 모델 import
-from .user_model import User, EmailVerification
+from .user_model import User, TempUser
 from .file_model import UploadedFile
 from .participant_model import Participant, DrawRecord, DrawParticipant
 from .terms_model import Terms
@@ -10,6 +10,7 @@ from .notification_model import Notification
 __all__ = [
     "UploadedFile",
     "User",
+    "TempUser",
     "Participant",
     "DrawRecord",
     "DrawParticipant",
@@ -19,5 +20,4 @@ __all__ = [
     "Notification",
     "FAQ",
     "FAQCategory",
-    "EmailVerification"
 ]

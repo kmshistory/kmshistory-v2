@@ -1,7 +1,7 @@
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from app.config import settings
-import asyncio
 import logging
+import datetime
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -51,45 +51,82 @@ def get_email_config():
             raise
     return _conf
 
-async def send_verification_email(email: str, verification_code: str):
-    """이메일 인증 코드 발송"""
+async def send_signup_confirmation_email(email: str, nickname: str, confirm_link: str, expires_at) -> None:
+    """회원가입 확정 안내 이메일 발송"""
     try:
-        logger.info(f"[이메일 발송 시도] 대상: {email}, 코드: {verification_code}")
         conf = get_email_config()
         if conf is None:
-            logger.warning(f"이메일 설정이 없어 인증 코드를 발송할 수 없습니다. (대상: {email}, 코드: {verification_code})")
-            logger.warning("개발 환경에서는 이메일 발송을 건너뜁니다.")
-            return True  # 개발 환경에서는 성공으로 처리
-        
+            logger.warning(f"이메일 설정이 없어 가입 인증 메일을 발송할 수 없습니다. (대상: {email})")
+            return
+
+        expires_text = (
+            expires_at.astimezone().strftime("%Y-%m-%d %H:%M:%S")
+            if hasattr(expires_at, "astimezone")
+            else str(expires_at)
+        )
+
         message = MessageSchema(
-            subject="[강민성 한국사] 이메일 인증 코드 안내",
+            subject="[강민성 한국사] 회원가입 이메일 인증 안내",
             recipients=[email],
             body=f"""
-안녕하세요. 강민성 한국사입니다.
-
-회원가입을 위한 이메일 인증 코드입니다.
-
-인증 코드: {verification_code}
-
-이 코드는 3분 후에 만료됩니다.
-정확한 코드를 입력해주세요.
-
-고맙습니다.
-강민성 한국사 드림.
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {{ font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.7; color: #1f2937; }}
+    .container {{ max-width: 640px; margin: 0 auto; padding: 32px 24px; }}
+    .header {{ text-align: center; margin-bottom: 32px; }}
+    .header h1 {{ font-size: 24px; font-weight: 700; color: #1d4ed8; margin: 0; }}
+    .content {{ background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 32px 28px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); }}
+    .content h2 {{ margin-top: 0; font-size: 20px; color: #111827; }}
+    .cta {{ display: inline-block; margin: 28px 0; padding: 14px 32px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff !important; text-decoration: none; border-radius: 9999px; font-weight: 700; box-shadow: 0 12px 24px rgba(37, 99, 235, 0.25); }}
+    .cta:hover {{ background: linear-gradient(135deg, #1e40af, #1d4ed8); }}
+    .info-box {{ background: #f8fafc; border-left: 4px solid #2563eb; padding: 16px 18px; margin-top: 24px; border-radius: 8px; font-size: 14px; color: #475569; }}
+    .footer {{ margin-top: 48px; text-align: center; font-size: 12px; color: #9ca3af; }}
+    .small {{ font-size: 13px; color: #6b7280; }}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>강민성 한국사</h1>
+    </div>
+    <div class="content">
+      <h2>안녕하세요, {nickname or '회원님'}!</h2>
+      <p class="small">회원가입을 완료하시려면 아래 버튼을 클릭해 이메일을 인증해주세요.</p>
+      <div style="text-align: center;">
+        <a href="{confirm_link}" class="cta" target="_blank" rel="noopener">가입 완료하기</a>
+      </div>
+      <p class="small">버튼이 동작하지 않는 경우 아래 링크를 복사해서 브라우저 주소창에 붙여넣어 주세요.</p>
+      <p class="small" style="word-break: break-all; background: #f1f5f9; padding: 12px 14px; border-radius: 8px;">
+        {confirm_link}
+      </p>
+      <div class="info-box">
+        <strong>📌 안내사항</strong>
+        <ul style="margin: 12px 0 0 16px; padding: 0;">
+          <li>해당 링크는 {expires_text} 까지 유효합니다.</li>
+          <li>제한시간이 지나면 다시 회원가입을 진행해야 합니다.</li>
+          <li>본 메일이 잘못 발송되었다면 무시하셔도 됩니다.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer">
+      © {datetime.datetime.now().year} 강민성 한국사. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
             """,
-            subtype="plain"
+            subtype="html",
         )
-        
-        logger.info(f"[이메일 발송 중] SMTP 서버 연결 시도: {settings.MAIL_SERVER}:{settings.MAIL_PORT}")
+
         fm = FastMail(conf)
         await fm.send_message(message)
-        logger.info(f"[이메일 발송 성공] 인증 코드 발송 완료: {email}")
-        return True
+        logger.info(f"[이메일 발송 성공] 가입 인증 링크 발송 완료: {email}")
     except Exception as e:
-        import traceback
-        logger.error(f"[이메일 발송 실패] 대상: {email}, 에러: {str(e)}")
-        logger.error(f"[이메일 발송 실패] 상세 에러:\n{traceback.format_exc()}")
-        raise e
+        logger.error(f"[이메일 발송 실패] 가입 인증 메일 전송 실패: {str(e)}")
+        raise
 
 async def send_welcome_email(email: str, nickname: str):
     """환영 이메일 발송"""
