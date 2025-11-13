@@ -47,8 +47,15 @@ def google_token_callback(
     error: str | None = Query(None, description="Google OAuth 에러 메시지"),
     db: Session = Depends(get_db),
 ):
-    """토큰 발급용 Google OAuth 콜백 처리"""
-    require_admin(request, db)
+    """토큰 발급용 Google OAuth 콜백 처리
+    # require_admin(request, db) 제거 (관리자 인증 없이 code만 받아서 처리)
+
+    주의: 이 엔드포인트는 Google OAuth 리다이렉트용이므로
+    관리자 인증 없이 code만 받아서 처리합니다.
+    """
+    # Google OAuth 콜백은 브라우저에서 자동 리다이렉트되므로 인증 불가
+    # require_admin 제거
+
 
     if error:
         return HTMLResponse(

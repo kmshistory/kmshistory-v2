@@ -11,10 +11,16 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.database import engine, Base
+# 모든 모델 import (테이블 생성/삭제를 위해 필요)
 from app.models import (
     UploadedFile, Participant, User, TempUser, Terms,
     DrawRecord, DrawParticipant, Notification,
     NoticeCategory, Notice, FAQCategory, FAQ
+)
+# Quiz 모델들도 import (누락되면 테이블 삭제 시 오류 발생)
+from app.models.quiz import (
+    Question, Choice, UserQuizHistory, QuizBundle,
+    QuizBundleQuestion, UserQuizBundleProgress, Topic, QuestionTopicLink
 )
 import logging
 
