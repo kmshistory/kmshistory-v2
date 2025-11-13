@@ -5,7 +5,7 @@
 cd "$(dirname "$0")/.." || exit 1
 
 # 가상환경 활성화
-source venv/bin/activate
+source .venv/bin/activate
 
 # backend 디렉토리로 이동
 cd backend || exit 1
