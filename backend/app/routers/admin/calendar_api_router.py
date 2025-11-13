@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -19,12 +21,29 @@ async def list_events(start_date: str | None = None, end_date: str | None = None
 # ---------------- 관리자 ----------------
 
 @router.get("/admin/events", response_model=CalendarEventListResponse)
-async def admin_list_events(request: Request, db: Session = Depends(get_db)):
+async def admin_list_events(
+    request: Request,
+    status: str | None = None,
+    include_past: bool = False,
+    db: Session = Depends(get_db),
+):
     user = get_current_user_from_cookie(request, db)
     if user.role != "admin":
         raise HTTPException(403, "관리자 권한이 필요합니다.")
     try:
-        events = calendar_service.list_events()
+        start_date = None
+        end_date = None
+
+        if status == "completed":
+            now = datetime.utcnow()
+            past_start = now - timedelta(days=365)
+            start_date = past_start.isoformat() + "Z"
+            end_date = now.isoformat() + "Z"
+        elif include_past:
+            past_start = datetime.utcnow() - timedelta(days=365)
+            start_date = past_start.isoformat() + "Z"
+
+        events = calendar_service.list_events(start_date=start_date, end_date=end_date)
         print(f"[INFO] 일정 목록 조회 성공: {len(events)}개 일정")
         return {"events": events, "total_count": len(events)}
     except HTTPException as e:

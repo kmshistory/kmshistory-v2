@@ -4,6 +4,8 @@ import apiClient from '../../shared/api/client';
 export default function Schedule() {
   // 상태 관리
   const [events, setEvents] = useState([]);
+  const [upcomingEventsData, setUpcomingEventsData] = useState([]);
+  const [completedEventsData, setCompletedEventsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentTab, setCurrentTab] = useState('upcoming');
@@ -38,13 +40,54 @@ export default function Schedule() {
   const loadEvents = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get('/calendar/admin/events');
-      console.log('API 응답 전체:', res.data);
-      const loadedEvents = res.data.events || [];
-      console.log('로드된 일정 목록:', loadedEvents);
-      console.log('일정 개수:', loadedEvents.length);
-      setEvents(loadedEvents);
-      if (loadedEvents.length === 0) {
+      const upcomingRes = await apiClient.get('/calendar/admin/events');
+      console.log('API 응답 전체 (예정):', upcomingRes.data);
+      const upcomingEvents = upcomingRes.data.events || [];
+      console.log('로드된 예정 일정 목록:', upcomingEvents);
+      console.log('예정 일정 개수:', upcomingEvents.length);
+      setUpcomingEventsData(upcomingEvents);
+
+      let combinedEvents = [...upcomingEvents];
+
+      try {
+        const pastRes = await apiClient.get('/calendar/admin/events', {
+          params: { status: 'completed' },
+        });
+        console.log('API 응답 전체 (종료 포함):', pastRes.data);
+        const pastEventsRaw = pastRes.data.events || [];
+        const now = new Date();
+        const completedOnly = pastEventsRaw.filter((event) => {
+          if (!event.end) return false;
+          try {
+            const endDate = new Date(event.end);
+            return endDate <= now;
+          } catch (e) {
+            console.error('종료 일정 필터링 중 날짜 파싱 오류:', event.end, e);
+            return false;
+          }
+        });
+        console.log('로드된 종료 일정 목록:', completedOnly);
+        console.log('종료 일정 개수:', completedOnly.length);
+        setCompletedEventsData(completedOnly);
+        if (completedOnly.length > 0) {
+          const eventMap = new Map();
+          upcomingEvents.forEach((event) => {
+            eventMap.set(event.id, event);
+          });
+          completedOnly.forEach((event) => {
+            eventMap.set(event.id, event);
+          });
+          combinedEvents = Array.from(eventMap.values());
+        }
+      } catch (pastErr) {
+        console.warn('종료된 일정 조회 실패:', pastErr);
+        setCompletedEventsData([]);
+      }
+
+      setEvents(combinedEvents);
+      console.log('최종 일정 목록:', combinedEvents);
+      console.log('최종 일정 개수:', combinedEvents.length);
+      if (combinedEvents.length === 0) {
         // 일정이 없거나 Google Calendar 서비스가 초기화되지 않은 경우
         console.warn('일정 목록이 비어있습니다. Google Calendar 서비스가 초기화되지 않았거나 일정이 없을 수 있습니다.');
         console.warn('백엔드 로그를 확인하여 Google Calendar 서비스 초기화 상태를 확인하세요.');
@@ -56,6 +99,8 @@ export default function Schedule() {
       showNotification(errorMessage, 'error');
       // 에러가 발생해도 빈 배열로 설정하여 UI가 깨지지 않도록 함
       setEvents([]);
+      setUpcomingEventsData([]);
+      setCompletedEventsData([]);
     } finally {
       setLoading(false);
     }
@@ -253,16 +298,10 @@ export default function Schedule() {
 
   // 필터링된 이벤트 계산
   const getFilteredEvents = () => {
-    if (!events || events.length === 0) return { upcoming: [], completed: [] };
-
     const now = new Date();
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth();
-
-    console.log('필터링 기준:', { currentYear, currentMonth, totalEvents: events.length });
-
-    // 현재 월의 일정만 필터링
-    const monthEvents = events.filter((event) => {
+    const monthFilter = (event) => {
       if (!event.start) {
         console.warn('일정에 start 날짜가 없습니다:', event);
         return false;
@@ -287,36 +326,21 @@ export default function Schedule() {
         console.error('날짜 파싱 오류:', event.start, e);
         return false;
       }
+    };
+
+    const upcomingMonthEvents = (upcomingEventsData || []).filter(monthFilter);
+    const completedMonthEvents = (completedEventsData || []).filter(monthFilter);
+
+    console.log('필터링 기준:', {
+      currentYear,
+      currentMonth,
+      totalUpcoming: upcomingEventsData.length,
+      totalCompleted: completedEventsData.length,
     });
+    console.log('현재 월 예정 일정 개수:', upcomingMonthEvents.length);
+    console.log('현재 월 종료 일정 개수:', completedMonthEvents.length);
 
-    console.log('현재 월 일정 개수:', monthEvents.length);
-
-    // 예정/종료 분류
-    const upcomingEvents = monthEvents.filter((event) => {
-      if (!event.end) return false;
-      try {
-        const endDate = new Date(event.end);
-        return endDate > now;
-      } catch (e) {
-        console.error('종료 날짜 파싱 오류:', event.end, e);
-        return false;
-      }
-    });
-
-    const completedEvents = monthEvents.filter((event) => {
-      if (!event.end) return false;
-      try {
-        const endDate = new Date(event.end);
-        return endDate <= now;
-      } catch (e) {
-        console.error('종료 날짜 파싱 오류:', event.end, e);
-        return false;
-      }
-    });
-
-    console.log('예정된 일정:', upcomingEvents.length, '종료된 일정:', completedEvents.length);
-
-    return { upcoming: upcomingEvents, completed: completedEvents };
+    return { upcoming: upcomingMonthEvents, completed: completedMonthEvents };
   };
 
   const { upcoming, completed } = getFilteredEvents();
@@ -478,7 +502,7 @@ export default function Schedule() {
                           다른 월을 선택하거나 일정을 추가해주세요.
                         </p>
                         <p className="text-xs text-gray-400 mt-2">
-                          전체 일정 개수: {events.length}개
+                          전체 일정 개수: {events.length}개 (예정 {upcomingEventsData.length}개 / 종료 {completedEventsData.length}개)
                         </p>
                       </div>
                     )}
