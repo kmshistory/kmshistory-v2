@@ -37,6 +37,7 @@ venv.bak/
 
 # Environment variables
 .env
+.env.staging
 
 # IDE
 .vscode/
