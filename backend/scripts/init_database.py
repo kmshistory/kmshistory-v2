@@ -12,7 +12,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.database import engine, Base
 from app.models import (
-    UploadedFile, Participant, User, Terms, EmailVerification,
+    UploadedFile, Participant, User, TempUser, Terms,
     DrawRecord, DrawParticipant, Notification,
     NoticeCategory, Notice, FAQCategory, FAQ
 )
