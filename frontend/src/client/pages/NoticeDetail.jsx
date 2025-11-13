@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import apiClient from '../../shared/api/client';
 
 export default function NoticeDetail() {
   const { id } = useParams();
-  const viewerRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState(null);
   const [error, setError] = useState(null);
@@ -40,135 +39,10 @@ export default function NoticeDetail() {
       const res = await apiClient.get(`/notices/${id}`);
       setNotice(res.data);
       setLoading(false);
-      
-      // Toast UI Editor Viewer 초기화 (비동기)
-      setTimeout(() => {
-        if (res.data.content && viewerRef.current) {
-          waitForTUI(() => {
-            if (viewerRef.current) {
-              renderContent(res.data.content, viewerRef.current);
-            }
-          });
-        }
-      }, 100);
     } catch (e) {
       console.error('공지사항 상세 조회 실패:', e);
       setError(e.response?.data?.detail || '공지사항을 불러오는 중 오류가 발생했습니다.');
       setLoading(false);
-    }
-  };
-
-  const waitForTUI = (cb) => {
-    if (window.toastui?.Editor) return cb();
-    const iv = setInterval(() => {
-      if (window.toastui?.Editor) {
-        clearInterval(iv);
-        cb();
-      }
-    }, 50);
-    setTimeout(() => clearInterval(iv), 5000);
-  };
-
-  const loadScript = (src) => {
-    return new Promise((resolve, reject) => {
-      const existing = document.querySelector(`script[src="${src}"]`);
-      if (existing) {
-        resolve();
-        return;
-      }
-      const s = document.createElement('script');
-      s.src = src;
-      s.async = true;
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.appendChild(s);
-    });
-  };
-
-  const loadCss = (href) => {
-    return new Promise((resolve, reject) => {
-      const existing = document.querySelector(`link[href="${href}"]`);
-      if (existing) {
-        resolve();
-        return;
-      }
-      const l = document.createElement('link');
-      l.rel = 'stylesheet';
-      l.href = href;
-      l.onload = resolve;
-      l.onerror = reject;
-      document.head.appendChild(l);
-    });
-  };
-
-  useEffect(() => {
-    // Toast UI Editor CSS/JS 로드
-    loadCss('https://uicdn.toast.com/editor/latest/toastui-editor.min.css');
-    loadScript('https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js');
-    loadScript('https://uicdn.toast.com/editor/latest/i18n/ko-kr.js');
-  }, []);
-
-  const renderContent = (content, container) => {
-    if (!container) return;
-    
-    if (!window.toastui?.Editor) {
-      container.innerHTML = content;
-      return;
-    }
-    
-    try {
-      const existingViewer = container.querySelector('.toastui-editor');
-      if (existingViewer) {
-        existingViewer.remove();
-      }
-      
-      const customHTMLRenderer = {
-        htmlBlock: {
-          iframe(node) {
-            return [
-              { type: 'openTag', tagName: 'iframe', outerNewLine: true, attributes: node.attrs },
-              { type: 'html', content: node.childrenHTML },
-              { type: 'closeTag', tagName: 'iframe', outerNewLine: true },
-            ];
-          },
-        },
-      };
-      
-      new window.toastui.Editor({
-        el: container,
-        initialValue: content,
-        viewer: true,
-        customHTMLRenderer: customHTMLRenderer,
-      });
-      
-      setTimeout(() => {
-        const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
-        headings.forEach(heading => {
-          heading.style.borderBottom = 'none';
-          heading.style.border = 'none';
-          heading.style.outline = 'none';
-          heading.style.boxShadow = 'none';
-          heading.style.background = 'none';
-          heading.style.backgroundImage = 'none';
-          heading.style.backgroundColor = 'transparent';
-          heading.style.borderImage = 'none';
-        });
-        
-        const tuiHeadings = container.querySelectorAll('.toastui-editor-contents h1, .toastui-editor-contents h2, .toastui-editor-contents h3, .toastui-editor-contents h4, .toastui-editor-contents h5, .toastui-editor-contents h6');
-        tuiHeadings.forEach(heading => {
-          heading.style.borderBottom = 'none';
-          heading.style.border = 'none';
-          heading.style.outline = 'none';
-          heading.style.boxShadow = 'none';
-          heading.style.background = 'none';
-          heading.style.backgroundImage = 'none';
-          heading.style.backgroundColor = 'transparent';
-          heading.style.borderImage = 'none';
-        });
-      }, 100);
-    } catch (error) {
-      console.error('Toast UI Viewer 초기화 오류:', error);
-      container.innerHTML = content;
     }
   };
 
@@ -250,7 +124,10 @@ export default function NoticeDetail() {
 
           {/* Content */}
           <div className="p-6 pt-4">
-            <div ref={viewerRef} id="viewer" className="prose max-w-none"></div>
+            <div
+              className="prose max-w-none"
+              dangerouslySetInnerHTML={{ __html: notice.content || '' }}
+            />
           </div>
         </article>
 
