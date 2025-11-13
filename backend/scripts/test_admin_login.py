@@ -131,7 +131,7 @@ def main():
   python test_admin_login.py --email admin@example.com --password Admin123!
   
   # 다른 서버 테스트
-  python test_admin_login.py --email admin@example.com --password Admin123! --url http://localhost:5173
+  python test_admin_login.py --email admin@example.com --password Admin123! --url http://localhost:3004
         """
     )
     
