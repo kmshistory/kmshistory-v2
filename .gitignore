@@ -118,6 +118,8 @@ uploads/
 
 # shell scripts
 *.sh
+!backend/run.sh
+!backend/run-staging.sh
 
 #memo
 aaa.txt
