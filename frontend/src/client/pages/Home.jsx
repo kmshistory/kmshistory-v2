@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTheme, themeUtils } from "../../shared/components/ThemeProvider";
 import { clientTheme } from "../styles/ClientTheme";
+import { FaInstagram } from "react-icons/fa";
 
 export default function Home() {
   const theme = useTheme();
@@ -176,6 +177,83 @@ export default function Home() {
                 }}
               >
                 <i className="material-icons text-white text-xl">arrow_forward</i>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        {/* 인스타그램 및 틱톡 컨테이너 */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-5xl mx-auto" style={{ minHeight: '100px' }}>
+          {/* 인스타그램 */}
+          <a
+            href="https://instagram.com/thekmshistory"
+            target="_blank"
+            rel="noreferrer"
+            className="card-hover rounded-lg"
+            style={{
+              backgroundColor: smallCard.backgroundColor,
+              backdropFilter: smallCard.backdropBlur ? 'blur(4px)' : 'none',
+              border: `${smallCard.borderWidth} solid ${smallCard.borderColor}`,
+              borderRadius: smallCard.borderRadius,
+              padding: smallCard.padding,
+              transition: smallCard.transition,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = smallCard.hoverBackgroundColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = smallCard.backgroundColor;
+            }}
+          >
+            <div className="flex items-start">
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center relative mr-4"
+                style={{ backgroundColor: '#E4405F' }}
+              >
+                <FaInstagram className="text-white text-lg sm:text-xl" />
+              </div>
+              <div className="flex-1 text-left">
+                <h3 className="text-white text-base sm:text-lg font-semibold mb-1">인스타그램</h3>
+                <p className="text-white text-sm opacity-80 leading-tight" style={{ wordBreak: 'keep-all', lineHeight: '1.3', maxWidth: '200px' }}>
+                  @thekmshistory
+                </p>
+              </div>
+            </div>
+          </a>
+
+          {/* 틱톡 */}
+          <a
+            href="https://www.tiktok.com/@kmshistory"
+            target="_blank"
+            rel="noreferrer"
+            className="card-hover rounded-lg"
+            style={{
+              backgroundColor: smallCard.backgroundColor,
+              backdropFilter: smallCard.backdropBlur ? 'blur(4px)' : 'none',
+              border: `${smallCard.borderWidth} solid ${smallCard.borderColor}`,
+              borderRadius: smallCard.borderRadius,
+              padding: smallCard.padding,
+              transition: smallCard.transition,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = smallCard.hoverBackgroundColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = smallCard.backgroundColor;
+            }}
+          >
+            <div className="flex items-start">
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center relative mr-4"
+                style={{ backgroundColor: '#000000' }}
+              >
+                <i className="material-icons text-white text-lg sm:text-xl">music_note</i>
+              </div>
+              <div className="flex-1 text-left">
+                <h3 className="text-white text-base sm:text-lg font-semibold mb-1">틱톡</h3>
+                <p className="text-white text-sm opacity-80 leading-tight" style={{ wordBreak: 'keep-all', lineHeight: '1.3', maxWidth: '200px' }}>
+                  @kmshistory
+                </p>
               </div>
             </div>
           </a>

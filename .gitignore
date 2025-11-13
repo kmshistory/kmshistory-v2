@@ -121,6 +121,8 @@ uploads/
 *.sh
 !backend/run.sh
 !backend/run-staging.sh
+!run-staging.sh
+!stop-staging.sh
 
 #memo
 aaa.txt

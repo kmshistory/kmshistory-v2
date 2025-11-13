@@ -1,14 +1,18 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+// 환경에 따라 백엔드 포트 결정 (스테이징: 8007, 프로덕션: 8006)
+const BACKEND_PORT = process.env.BACKEND_PORT || process.env.VITE_BACKEND_PORT || '8006'
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
     port: 3004,
+    host: '0.0.0.0',
     proxy: {
       '/api': {
-        target: 'http://localhost:8006',
+        target: `http://localhost:${BACKEND_PORT}`,
         changeOrigin: true,
         secure: false,
       }
