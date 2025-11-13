@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useTheme, themeUtils } from '../../shared/components/ThemeProvider';
 import apiClient from '../../shared/api/client';
 
 export default function Withdraw() {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   
   // 🎨 theme 기반 색상
   const primary = themeUtils.getColor(theme, 'primary');
@@ -138,50 +139,46 @@ export default function Withdraw() {
     return null;
   }
 
+  const menuItems = [
+    { to: '/mypage', label: '마이페이지' },
+    { to: '/mypage/edit-profile', label: '정보수정' },
+    { to: '/mypage/change-password', label: '비밀번호 변경' },
+    { to: '/mypage/withdraw', label: '회원탈퇴' },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 transition-colors duration-200">
-      <div className="w-full px-4 sm:px-6 lg:px-8">
+      <div className="w-full sm:w-[95%] md:w-[768px] lg:w-[1024px] xl:w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">회원탈퇴</h1>
           <p className="mt-2 text-gray-600">계정을 영구적으로 삭제합니다</p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid gap-6 lg:grid-cols-12">
           {/* LNB */}
-          <div className="lg:col-span-1">
-            <nav className="space-y-2">
-              <Link
-                to="/mypage"
-                className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200"
-              >
-                마이페이지
-              </Link>
-              <Link
-                to="/mypage/change-password"
-                className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200"
-              >
-                비밀번호 변경
-              </Link>
-              <Link
-                to="/mypage/edit-profile"
-                className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200"
-              >
-                정보수정
-              </Link>
-              <Link
-                to="/mypage/withdraw"
-                className="block px-4 py-2 text-sm font-medium text-white rounded-md transition-colors duration-200"
-                style={{ backgroundColor: primary }}
-              >
-                회원탈퇴
-              </Link>
+          <aside className="lg:col-span-2">
+            <nav className="space-y-1 rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+              {menuItems.map((item) => {
+                const isActive = location.pathname === item.to;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={`block rounded-lg px-4 py-2 text-sm font-medium transition ${
+                      isActive ? 'bg-blue-50 text-blue-600 shadow-sm' : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
             </nav>
-          </div>
+          </aside>
           
           {/* 메인 콘텐츠 */}
-          <div className="lg:col-span-11">
-            <div className="bg-white shadow-sm rounded-lg transition-colors duration-200">
-              <div className="space-y-6 p-6">
+          <main className="lg:col-span-10">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-colors duration-200">
+              <div className="space-y-6">
                 {/* 회원탈퇴 안내 */}
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">회원탈퇴 안내</h2>
@@ -270,7 +267,7 @@ export default function Withdraw() {
                 </div>
               </div>
             </div>
-          </div>
+          </main>
         </div>
       </div>
 
