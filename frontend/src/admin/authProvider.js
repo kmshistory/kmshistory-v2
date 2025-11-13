@@ -42,6 +42,13 @@ export const authProvider = {
   // ✅ 인증 확인 (react-admin이 자동 호출)
   // 관리자 권한도 함께 확인
   checkAuth: () => {
+    // 로컬스토리지에 사용자 정보가 없으면 API 호출 스킵
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      return Promise.reject(new Error("인증이 필요합니다."));
+    }
+
+    // 로컬스토리지에 사용자 정보가 있으면 서버에서 최신 상태 확인
     return fetch("/api/auth/me", {
       method: "GET",
       credentials: "include", // ✅ 쿠키 자동 포함
@@ -57,6 +64,7 @@ export const authProvider = {
               return Promise.reject(new Error("관리자 권한이 필요합니다."));
             }
             // 관리자 권한이 있으면 통과
+            localStorage.setItem("user", JSON.stringify(user));
             return Promise.resolve();
           });
         }
@@ -94,6 +102,23 @@ export const authProvider = {
 
   // ✅ 권한 확인 (관리자 권한 반환)
   getPermissions: () => {
+    // 로컬스토리지에 사용자 정보가 없으면 API 호출 스킵
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      return Promise.reject(new Error("인증이 필요합니다."));
+    }
+
+    // 로컬스토리지에서 먼저 확인
+    try {
+      const user = JSON.parse(storedUser);
+      if (user.role === "admin") {
+        // 로컬스토리지에 관리자 정보가 있으면 일단 통과
+        // (서버 확인은 백그라운드에서 수행)
+      }
+    } catch (e) {
+      // 로컬스토리지 파싱 실패 시 서버 확인
+    }
+
     // 서버에서 최신 사용자 정보를 가져와서 확인
     return fetch("/api/auth/me", {
       method: "GET",
@@ -124,6 +149,7 @@ export const authProvider = {
         } catch (e) {
           // ignore
         }
+        localStorage.removeItem("user");
         return Promise.reject(error);
       });
   },

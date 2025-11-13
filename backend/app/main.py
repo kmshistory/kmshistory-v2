@@ -179,6 +179,21 @@ app = FastAPI(
 )
 
 # ----------------------------
+# CSP 헤더 오버라이드 미들웨어 (nginx에서 설정한 CSP 제거)
+# ----------------------------
+@app.middleware("http")
+async def remove_csp_header(request: Request, call_next):
+    """nginx에서 설정한 CSP 헤더 제거 (HTML meta 태그의 CSP 사용)"""
+    response = await call_next(request)
+    # Content-Security-Policy 헤더 제거 (HTML meta 태그 사용)
+    # MutableHeaders는 pop 메서드가 없으므로 del 사용
+    if "Content-Security-Policy" in response.headers:
+        del response.headers["Content-Security-Policy"]
+    if "content-security-policy" in response.headers:
+        del response.headers["content-security-policy"]
+    return response
+
+# ----------------------------
 # CORS 설정 (React 연동용)
 # ----------------------------
 app.add_middleware(
@@ -188,6 +203,7 @@ app.add_middleware(
         "http://localhost:8006",  # 백엔드 서버 (직접 접속용)
         "http://127.0.0.1:8006",  # IPv4 직접 접속용
         "https://staging.kmshistory.kr",  # 스테이징 서버
+        "https://kmshistory.kr",  # 운영 서버
     ],
     allow_credentials=True,                   # ✅ 쿠키 전송 허용 (필수)
     allow_methods=["*"],                       # 모든 HTTP 메서드 허용

@@ -14,6 +14,23 @@ apiClient.interceptors.request.use(
   (config) => {
     // JWT는 HttpOnly 쿠키(access_token)로 자동 전송됨
     // withCredentials: true로 쿠키 자동 포함
+    // /auth/me 요청에 플래그 추가 (401 에러 조용히 처리)
+    if (config.url?.includes('/auth/me')) {
+      config.silent401 = true;
+      // validateStatus를 동적으로 설정하여 401을 정상 응답으로 처리
+      const originalValidateStatus = config.validateStatus;
+      config.validateStatus = function (status) {
+        // /auth/me의 401은 정상 응답으로 처리
+        if (status === 401) {
+          return true;
+        }
+        // 원래 validateStatus가 있으면 사용, 없으면 기본값
+        if (originalValidateStatus) {
+          return originalValidateStatus(status);
+        }
+        return status >= 200 && status < 300;
+      };
+    }
     return config;
   },
   (error) => {
@@ -24,17 +41,29 @@ apiClient.interceptors.request.use(
 // 응답 인터셉터 - 에러 처리
 apiClient.interceptors.response.use(
   (response) => {
+    // /auth/me의 401 응답을 에러로 변환하여 catch 블록에서 처리할 수 있도록 함
+    if (response.config?.url?.includes('/auth/me') && response.status === 401) {
+      // 401을 에러로 변환하되, validateStatus로 이미 정상 응답으로 처리되어
+      // 브라우저 콘솔에는 에러가 출력되지 않음
+      const error = new Error('Unauthorized');
+      error.response = response;
+      error.config = response.config;
+      error.silent = true; // 콘솔 출력 방지 플래그
+      return Promise.reject(error);
+    }
     return response;
   },
   (error) => {
     const status = error.response?.status;
     const url = error.config?.url || '';
+    const isAuthMe = url.includes('/auth/me');
     
     // 401 Unauthorized - 로그인 필요
     if (status === 401) {
-      // /auth/me는 로그인 상태 확인용이므로 401이 정상 (리다이렉트 안함)
-      if (url.includes('/auth/me')) {
+      // /auth/me는 validateStatus에서 이미 처리되므로 여기서는 다른 401만 처리
+      if (isAuthMe) {
         // 조용히 처리 (로그인하지 않은 상태로 간주)
+        error.silent = true;
         return Promise.reject(error);
       }
 

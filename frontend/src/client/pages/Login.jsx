@@ -36,6 +36,13 @@ export default function Login() {
   // 이미 로그인된 사용자인지 확인
   useEffect(() => {
     const checkLoginStatus = async () => {
+      // 로컬스토리지에 사용자 정보가 없으면 API 호출 스킵
+      const storedUser = localStorage.getItem('user');
+      if (!storedUser) {
+        return;
+      }
+
+      // 로컬스토리지에 사용자 정보가 있으면 서버에서 최신 상태 확인
       try {
         const response = await apiClient.get('/auth/me');
         if (response.data && response.data.nickname) {
@@ -44,6 +51,7 @@ export default function Login() {
         }
       } catch (error) {
         // 로그인되지 않은 상태이므로 정상 진행
+        localStorage.removeItem('user');
       }
     };
     checkLoginStatus();
