@@ -24,13 +24,15 @@ const difficultyLabel = (value) => {
   return DIFFICULTY_LABELS[value] || value;
 };
 
-const CATEGORY_SELECT_OPTIONS = [{ value: '', label: '전체' }].concat(
-  Object.entries(CATEGORY_LABELS).map(([value, label]) => ({ value, label })),
-);
+const CATEGORY_SELECT_OPTIONS = Object.entries(CATEGORY_LABELS).map(([value, label]) => ({
+  value,
+  label,
+}));
 
-const DIFFICULTY_SELECT_OPTIONS = [{ value: '', label: '전체' }].concat(
-  Object.entries(DIFFICULTY_LABELS).map(([value, label]) => ({ value, label })),
-);
+const DIFFICULTY_SELECT_OPTIONS = Object.entries(DIFFICULTY_LABELS).map(([value, label]) => ({
+  value,
+  label,
+}));
 
 const QUESTION_PAGE_SIZE = 10;
 const BUNDLE_PAGE_SIZE = 10;
@@ -103,6 +105,36 @@ function ErrorState({ error, onRetry }) {
     </div>
   );
 }
+
+const FilterSelect = ({
+  value,
+  onChange,
+  options,
+  placeholder = '전체',
+  disabled = false,
+  showDefaultOption = true,
+}) => {
+  return (
+    <div className="relative min-w-[160px]">
+      <select
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        className="appearance-none w-full rounded-lg border border-gray-200 bg-white px-4 py-2 pr-10 text-sm font-medium text-gray-700 shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+      >
+        {showDefaultOption ? <option value="">{placeholder}</option> : null}
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+        <i className="fas fa-chevron-down text-xs" />
+      </span>
+    </div>
+  );
+};
 
 const QuestionTable = ({ items }) => {
   if (!items?.length) {
@@ -452,55 +484,43 @@ export default function QuizStats() {
             description="정답률이 낮은 순으로 최대 10건까지 표시됩니다."
             action={
               <div className="flex flex-wrap items-center gap-2">
-                <select
-                  className="select select-sm select-bordered"
+                <FilterSelect
                   value={questionCategoryFilter}
                   onChange={(event) => {
                     setQuestionCategoryFilter(event.target.value);
                     setQuestionPage(1);
                   }}
-                >
-                  {CATEGORY_SELECT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="select select-sm select-bordered"
+                  options={CATEGORY_SELECT_OPTIONS}
+                  placeholder="전체 카테고리"
+                />
+                <FilterSelect
                   value={questionDifficultyFilter}
                   onChange={(event) => {
                     setQuestionDifficultyFilter(event.target.value);
                     setQuestionPage(1);
                   }}
-                >
-                  {DIFFICULTY_SELECT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="select select-sm select-bordered"
+                  options={DIFFICULTY_SELECT_OPTIONS}
+                  placeholder="전체 난이도"
+                />
+                <FilterSelect
                   value={questionTopicFilter}
                   onChange={(event) => {
                     setQuestionTopicFilter(event.target.value);
                     setQuestionPage(1);
                   }}
+                  options={topicOptions.map((topic) => ({
+                    value: topic.id,
+                    label: topic.name,
+                  }))}
+                  placeholder="전체 주제"
                   disabled={topicsLoading}
-                >
-                  <option value="">전체 주제</option>
-                  {topicOptions.map((topic) => (
-                    <option key={topic.id} value={topic.id}>
-                      {topic.name}
-                    </option>
-                  ))}
-                </select>
+                />
                 <button
                   type="button"
                   onClick={handleResetQuestionFilters}
-                  className="btn btn-sm btn-ghost"
+                  className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 shadow-sm transition hover:border-primary hover:text-primary hover:shadow focus:outline-none focus:ring-2 focus:ring-primary/30"
                 >
+                  <i className="fas fa-undo-alt text-xs" />
                   초기화
                 </button>
               </div>
@@ -522,39 +542,30 @@ export default function QuizStats() {
             description="사용자들이 풀이한 테마형의 참여 인원과 평균 정답률입니다."
             action={
               <div className="flex flex-wrap items-center gap-2">
-                <select
-                  className="select select-sm select-bordered"
+                <FilterSelect
                   value={bundleCategoryFilter}
                   onChange={(event) => {
                     setBundleCategoryFilter(event.target.value);
                     setBundlePage(1);
                   }}
-                >
-                  {CATEGORY_SELECT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="select select-sm select-bordered"
+                  options={CATEGORY_SELECT_OPTIONS}
+                  placeholder="전체 카테고리"
+                />
+                <FilterSelect
                   value={bundleDifficultyFilter}
                   onChange={(event) => {
                     setBundleDifficultyFilter(event.target.value);
                     setBundlePage(1);
                   }}
-                >
-                  {DIFFICULTY_SELECT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                  options={DIFFICULTY_SELECT_OPTIONS}
+                  placeholder="전체 난이도"
+                />
                 <button
                   type="button"
                   onClick={handleResetBundleFilters}
-                  className="btn btn-sm btn-ghost"
+                  className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 shadow-sm transition hover:border-primary hover:text-primary hover:shadow focus:outline-none focus:ring-2 focus:ring-primary/30"
                 >
+                  <i className="fas fa-undo-alt text-xs" />
                   초기화
                 </button>
               </div>

@@ -35,7 +35,7 @@ from app.services.quiz_service import (
     upsert_user_bundle_progress,
     reset_user_bundle_progress,
 )
-from app.utils.auth import get_current_user_from_cookie
+from app.utils.auth import get_current_user_from_cookie, get_current_user_optional
 
 router = APIRouter(prefix="/api/quiz", tags=["Quiz"])
 
@@ -43,7 +43,6 @@ router = APIRouter(prefix="/api/quiz", tags=["Quiz"])
 @router.get("/random", response_model=QuestionSchema)
 def get_random_question(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user_from_cookie),
     category: Optional[QuizCategory] = Query(None),
     difficulty: Optional[QuizDifficulty] = Query(None),
     bundle_id: Optional[int] = Query(None, alias="bundleId"),
@@ -97,7 +96,7 @@ def get_random_question(
 def submit_answer(
     data: SubmitAnswerSchema,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user_from_cookie)
+    current_user=Depends(get_current_user_optional)
 ):
     question = db.query(Question).filter(Question.id == data.question_id).first()
     if not question:
@@ -120,16 +119,16 @@ def submit_answer(
         is_correct = question.correct_answer.strip().lower() == user_answer.lower()
 
     # 기록 저장
-    history = UserQuizHistory(
-        user_id=current_user.id,
-        question_id=question.id,
-        bundle_id=data.bundle_id,
-        user_answer=user_answer,
-        is_correct=is_correct
-    )
-
-    db.add(history)
-    db.commit()
+    if current_user:
+        history = UserQuizHistory(
+            user_id=current_user.id,
+            question_id=question.id,
+            bundle_id=data.bundle_id,
+            user_answer=user_answer,
+            is_correct=is_correct,
+        )
+        db.add(history)
+        db.commit()
 
     return QuizResultSchema(
         is_correct=is_correct,
