@@ -1,9 +1,12 @@
 # app/main.py
-from contextlib import asynccontextmanager
+import asyncio
+from contextlib import asynccontextmanager, suppress
+from datetime import datetime, timezone
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from app import settings, engine, Base
+from app.database.connection import SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
 import os
 # 모든 모델 직접 import (metadata 등록용)
@@ -42,12 +45,45 @@ from app.routers.admin.admin_setting_api_router import router as admin_setting_a
 from app.routers.admin.google_oauth_router import router as google_oauth_router
 from app.routers.client.seo_router import router as seo_router
 from app.routers.client.quiz_router import router as quiz_router
+
+
+async def cleanup_expired_temp_users_task(interval_seconds: int = 3600):
+    """주기적으로 만료된 임시 회원가입 데이터를 정리한다."""
+    # 최초 실행 시 한 번 정리
+    await _cleanup_expired_temp_users()
+    while True:
+        await asyncio.sleep(interval_seconds)
+        await _cleanup_expired_temp_users()
+
+
+async def _cleanup_expired_temp_users():
+    """만료된 TempUser 레코드를 삭제한다."""
+    session = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        deleted = (
+            session.query(TempUser)
+            .filter(TempUser.expires_at < now)
+            .delete(synchronize_session=False)
+        )
+        if deleted:
+            session.commit()
+            print(f"[TempUser Cleanup] 만료된 임시 사용자 {deleted}명 삭제")
+        else:
+            session.commit()
+    except Exception as exc:
+        session.rollback()
+        print(f"[TempUser Cleanup] 정리 중 오류 발생: {exc}")
+    finally:
+        session.close()
 # ----------------------------
 # Lifespan Context (신버전)
 # ----------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """서버 시작/종료 시 수행되는 초기화 작업"""
+
+    app.state.temp_user_cleanup_task = None
 
     # 🚀 Startup
     try:
@@ -102,7 +138,15 @@ async def lifespan(app: FastAPI):
             
         else:  # none
             print(f"ℹ️  DB 자동 마이그레이션 비활성화됨 (모드: {db_mode})")
-            
+        cleanup_interval = max(int(getattr(settings, "TEMP_USER_CLEANUP_INTERVAL_SECONDS", 3600)), 0)
+        if cleanup_interval > 0:
+            app.state.temp_user_cleanup_task = asyncio.create_task(
+                cleanup_expired_temp_users_task(cleanup_interval)
+            )
+            print(f"[TempUser Cleanup] 만료 임시 사용자 정리 작업 시작 (주기: {cleanup_interval}초)")
+        else:
+            print("[TempUser Cleanup] 주기가 0 이하로 설정되어 있어 실행하지 않습니다.")
+
     except SQLAlchemyError as e:
         print(f"❌ DB 초기화 중 오류 발생: {e}")
         import traceback
@@ -116,6 +160,13 @@ async def lifespan(app: FastAPI):
     yield
 
     # 🛑 Shutdown
+    cleanup_task = getattr(app.state, "temp_user_cleanup_task", None)
+    if cleanup_task:
+        cleanup_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await cleanup_task
+        print("[TempUser Cleanup] 정리 작업이 중단되었습니다.")
+
     print("🧹 서버 종료 중... 연결 정리 완료.")
 
 

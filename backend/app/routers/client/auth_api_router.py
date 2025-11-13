@@ -44,21 +44,10 @@ async def logout():
     result = auth_service.logout_service(response)
     return JSONResponse(result, headers=dict(response.headers))
 
-@router.post("/send-code")
-async def send_code(request: Request, db: Session = Depends(get_db)):
-    result = await auth_service.send_verification_code_service(request, db)
+@router.get("/verify-signup")
+async def verify_signup(token: str, db: Session = Depends(get_db)):
+    result = await auth_service.verify_signup_token_service(token, db)
     return JSONResponse(result)
-
-@router.post("/verify-email")
-async def verify_email(request: Request, db: Session = Depends(get_db)):
-    try:
-        result = await auth_service.verify_email_code_service(request, db)
-        return JSONResponse(result)
-    except Exception as e:
-        import traceback
-        print(f"[ERROR] verify_email 라우터 에러: {str(e)}")
-        traceback.print_exc()
-        raise
 
 @router.post("/check-email")
 async def check_email(request: Request, db: Session = Depends(get_db)):

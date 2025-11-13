@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-secret-key-change-this-in-production"  # 프로덕션에서는 반드시 변경!
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24시간 (1440분)
+    EMAIL_VERIFICATION_EXPIRE_MINUTES: int = 60 * 24  # 임시 사용자 토큰 만료 시간 (기본 24시간)
+    TEMP_USER_CLEANUP_INTERVAL_SECONDS: int = 60 * 60  # 만료된 임시 사용자 정리 주기 (기본 1시간)
     
     # DB 자동 마이그레이션 설정
     # none: 마이그레이션 없음 (프로덕션)

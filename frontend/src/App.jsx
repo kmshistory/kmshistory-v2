@@ -9,6 +9,7 @@ import FAQ from './client/pages/FAQ';
 import Schedule from './client/pages/Schedule';
 import Login from './client/pages/Login';
 import Register from './client/pages/Register';
+import RegisterConfirm from './client/pages/RegisterConfirm';
 import ForgotPassword from './client/pages/ForgotPassword';
 import ForgotPasswordReset from './client/pages/ForgotPasswordReset';
 import MyPage from './client/pages/MyPage';
@@ -19,6 +20,7 @@ import PrivacyCollection from './client/pages/PrivacyCollection';
 import PrivacyPolicy from './client/pages/PrivacyPolicy';
 import TermsOfService from './client/pages/TermsOfService';
 import MemberRequired from './client/pages/MemberRequired';
+import LoginRequired from './client/pages/LoginRequired';
 import AdminRequired from './client/pages/AdminRequired';
 import QuizPlay from './client/pages/QuizPlay';
 
@@ -43,6 +45,7 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="auth/login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="register/confirm" element={<RegisterConfirm />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="auth/forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ForgotPasswordReset />} />
@@ -55,6 +58,7 @@ function App() {
           <Route path="privacy" element={<PrivacyPolicy />} />
           <Route path="terms" element={<TermsOfService />} />
           <Route path="member-required" element={<MemberRequired />} />
+          <Route path="login-required" element={<LoginRequired />} />
           <Route path="admin-required" element={<AdminRequired />} />
           <Route path="quiz" element={<QuizPlay />} />
         </Route>

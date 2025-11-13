@@ -145,10 +145,6 @@ export default function QuizPlay() {
       setQuestionContext({ mode: 'random', bundleId: null, index: 0 });
     } catch (error) {
       const status = error.response?.status;
-      if (status === 401) {
-        navigate('/member-required');
-        return;
-      }
       if (status === 404) {
         setFetchError('조건에 맞는 문제가 없습니다. 필터를 변경 후 다시 시도해주세요.');
       } else {
@@ -179,7 +175,7 @@ export default function QuizPlay() {
       } catch (error) {
         const status = error.response?.status;
         if (status === 401) {
-          navigate('/member-required');
+          navigate('/login-required');
           return;
         }
         setBundleError('테마형 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
@@ -333,7 +329,9 @@ export default function QuizPlay() {
     } catch (error) {
       const status = error.response?.status;
       if (status === 401) {
-        navigate('/member-required');
+        if (questionContext.mode === 'bundle') {
+          navigate('/login-required');
+        }
         return;
       }
       setValidationMessage('정답을 제출하지 못했습니다. 잠시 후 다시 시도해주세요.');
@@ -494,7 +492,7 @@ export default function QuizPlay() {
     } catch (error) {
       const status = error.response?.status;
       if (status === 401) {
-        navigate('/member-required');
+        navigate('/login-required');
         return;
       }
       setBundleError('테마형을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');

@@ -39,7 +39,7 @@ apiClient.interceptors.response.use(
       }
 
       if (url.includes('/quiz/')) {
-        window.location.href = '/member-required';
+        window.location.href = '/login-required';
         return Promise.reject(error);
       }
       

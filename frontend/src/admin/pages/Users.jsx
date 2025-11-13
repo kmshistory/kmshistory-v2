@@ -471,17 +471,17 @@ export default function Users() {
                     </td>
                     <td className="px-4 py-4 text-center">{getStatusBadge(user)}</td>
                     <td className="px-2 py-4 text-sm text-gray-500">{formatDate(user.created_at)}</td>
-                    <td className="px-4 py-4 text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
+                    <td className="px-4 py-4 text-right text-sm font-medium min-w-[260px]">
+                      <div className="flex items-center justify-end gap-2 flex-nowrap">
                         <button
                           onClick={() => handleViewUser(user.id)}
-                          className="text-purple-700 hover:text-purple-900"
+                          className="inline-flex items-center px-3 py-1 text-xs font-semibold border border-purple-200 text-purple-700 rounded-full hover:border-purple-300 hover:text-purple-900 transition-colors duration-200"
                         >
                           상세보기
                         </button>
                         <button
                           onClick={() => handleEditUser(user.id)}
-                          className="text-green-500 hover:text-green-700"
+                          className="inline-flex items-center px-3 py-1 text-xs font-semibold border border-green-200 text-green-600 rounded-full hover:border-green-300 hover:text-green-700 transition-colors duration-200"
                         >
                           수정
                         </button>
@@ -490,21 +490,21 @@ export default function Users() {
                             {isUserBlocked(user) ? (
                               <button
                                 onClick={() => handleUnblockUser(user.id, user.nickname)}
-                                className="text-blue-600 hover:text-blue-900"
+                                className="inline-flex items-center px-3 py-1 text-xs font-semibold border border-blue-200 text-blue-600 rounded-full hover:border-blue-300 hover:text-blue-800 transition-colors duration-200"
                               >
                                 차단해제
                               </button>
                             ) : (
                               <button
                                 onClick={() => handleBlockUser(user.id, user.nickname)}
-                                className="text-pink-600 hover:text-pink-900"
+                                className="inline-flex items-center px-3 py-1 text-xs font-semibold border border-pink-200 text-pink-600 rounded-full hover:border-pink-300 hover:text-pink-800 transition-colors duration-200"
                               >
                                 차단
                               </button>
                             )}
                             <button
                               onClick={() => handleDeleteUser(user.id, user.nickname)}
-                              className="text-red-600 hover:text-red-900"
+                              className="inline-flex items-center px-3 py-1 text-xs font-semibold border border-red-200 text-red-600 rounded-full hover:border-red-300 hover:text-red-800 transition-colors duration-200"
                             >
                               삭제
                             </button>

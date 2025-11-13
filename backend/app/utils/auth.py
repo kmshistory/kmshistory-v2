@@ -82,6 +82,21 @@ def get_current_user_from_cookie(request: Request, db: Session = Depends(get_db)
     
     return user
 
+
+def get_current_user_optional(request: Request, db: Session = Depends(get_db)) -> User | None:
+    """
+    쿠키에서 현재 사용자 조회 (선택적)
+    - 인증쿠키가 없거나 만료된 경우 None 반환
+    - 그 외 오류는 그대로 전파
+    """
+    try:
+        return get_current_user_from_cookie(request, db)
+    except HTTPException as exc:
+        if exc.status_code == status.HTTP_401_UNAUTHORIZED:
+            return None
+        raise
+
+
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)) -> User:
     """현재 사용자 조회"""
     token = credentials.credentials

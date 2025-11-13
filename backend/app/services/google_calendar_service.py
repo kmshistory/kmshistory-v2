@@ -1,6 +1,6 @@
 import os
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 
 from google.auth.transport.requests import Request
@@ -88,8 +88,18 @@ class GoogleCalendarService:
 
         try:
             calendar_id = calendar_id or settings.GOOGLE_CALENDAR_ID
-            time_min_iso = (time_min or datetime.utcnow()).isoformat() + "Z"
-            time_max_iso = time_max.isoformat() + "Z" if time_max else None
+
+            def to_rfc3339(dt: Optional[datetime]) -> Optional[str]:
+                if not dt:
+                    return None
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                else:
+                    dt = dt.astimezone(timezone.utc)
+                return dt.isoformat().replace("+00:00", "Z")
+
+            time_min_iso = to_rfc3339(time_min or datetime.utcnow())
+            time_max_iso = to_rfc3339(time_max) if time_max else None
 
             params = {
                 "calendarId": calendar_id,
