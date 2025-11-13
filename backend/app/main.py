@@ -184,7 +184,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",  # 프론트엔드 개발 서버
+        "http://localhost:3004",  # 프론트엔드 개발 서버
         "http://localhost:8006",  # 백엔드 서버 (직접 접속용)
         "http://127.0.0.1:8006",  # IPv4 직접 접속용
         "https://staging.kmshistory.kr",  # 스테이징 서버

@@ -3,7 +3,10 @@ import os
 
 # .env 파일 경로 명시적으로 지정
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-ENV_FILE_PATH = os.path.join(BASE_DIR, ".env")
+
+# ENV_FILE 환경 변수로 파일 선택 (.env 또는 .env.staging)
+_env_file_name = os.getenv("ENV_FILE", ".env")
+ENV_FILE_PATH = os.path.join(BASE_DIR, _env_file_name)
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "KMS History Renewal"
@@ -18,7 +21,7 @@ class Settings(BaseSettings):
     # 기존 DATABASE_URL (호환성을 위해 유지)
     DATABASE_URL: str = "postgresql+psycopg2://devuser:976431@localhost:5432/kmshistory"
     
-    FRONTEND_URL: str = "http://localhost:5173"
+    FRONTEND_URL: str = "http://localhost:3004"
     
     # JWT 인증 설정
     SECRET_KEY: str = "your-secret-key-change-this-in-production"  # 프로덕션에서는 반드시 변경!
@@ -65,7 +68,7 @@ class Settings(BaseSettings):
     MAX_QUIZ_IMAGE_SIZE_MB: int = 5
 
     class Config:
-        env_file = ENV_FILE_PATH if os.path.exists(ENV_FILE_PATH) else ".env"  # .env 파일 경로 명시
+        env_file = ENV_FILE_PATH if os.path.exists(ENV_FILE_PATH) else os.path.join(BASE_DIR, ".env")
         env_file_encoding = "utf-8"
         case_sensitive = False  # 환경변수 대소문자 구분 안 함
         extra = "allow"  # .env 파일의 추가 필드 허용 (Google 설정 등)
