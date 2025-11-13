@@ -22,13 +22,32 @@ const AdminLayout = ({ children }) => {
   // 사용자 정보 로드
   useEffect(() => {
     const loadUserInfo = async () => {
+      // 로컬스토리지에 사용자 정보가 없으면 API 호출 스킵
+      const storedUser = localStorage.getItem("user");
+      if (!storedUser) {
+        return;
+      }
+
+      // 로컬스토리지에서 먼저 사용자 정보 로드
+      try {
+        const userData = JSON.parse(storedUser);
+        if (userData.nickname) {
+          setUserName(userData.nickname);
+        }
+      } catch (e) {
+        // 로컬스토리지 파싱 실패 시 무시
+      }
+
+      // 서버에서 최신 상태 확인
       try {
         const response = await apiClient.get("/auth/me");
         if (response.data.nickname) {
           setUserName(response.data.nickname);
+          localStorage.setItem("user", JSON.stringify(response.data));
         }
       } catch (error) {
-        console.error("사용자 정보 로드 실패:", error);
+        // 에러 발생 시 로컬스토리지 정리
+        localStorage.removeItem("user");
       }
     };
     loadUserInfo();

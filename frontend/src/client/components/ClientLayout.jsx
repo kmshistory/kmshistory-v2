@@ -27,14 +27,26 @@ const ClientLayout = () => {
   const mobileMenu = clientTheme.navigation.mobileMenu;
 
   const checkLoginStatus = useCallback(async () => {
+    // 로컬스토리지에 사용자 정보가 없으면 API 호출 스킵 (이미 로그인하지 않은 상태 확실)
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) {
+      setIsLoggedIn(false);
+      setUser(null);
+      return;
+    }
+
+    // 로컬스토리지에 사용자 정보가 있으면 서버에서 최신 상태 확인
     try {
       const response = await apiClient.get('/auth/me');
       if (response.data && response.data.nickname) {
         setIsLoggedIn(true);
         setUser(response.data);
+        // 최신 정보를 로컬스토리지에 저장
+        localStorage.setItem('user', JSON.stringify(response.data));
       } else {
         setIsLoggedIn(false);
         setUser(null);
+        localStorage.removeItem('user');
       }
     } catch (error) {
       // 401 (Unauthorized)는 정상적인 경우 (로그인하지 않은 상태)
@@ -42,6 +54,7 @@ const ClientLayout = () => {
       // 나머지 에러도 조용히 처리
       setIsLoggedIn(false);
       setUser(null);
+      localStorage.removeItem('user');
       
       // 디버그 모드에서만 에러 로그 출력 (개발 중에만 필요시 주석 해제)
       // if (process.env.NODE_ENV === 'development') {
