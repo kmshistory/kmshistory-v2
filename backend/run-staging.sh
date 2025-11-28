@@ -10,6 +10,6 @@ source .venv/bin/activate
 # backend 디렉토리로 이동
 cd backend || exit 1
 
-# FastAPI 서버 실행 (8007 포트)
-uvicorn app.main:app --host 0.0.0.0 --port 8007 --reload
+# FastAPI 서버 실행 (8007 포트, .env.staging 사용)
+ENV_FILE=.env.staging uvicorn app.main:app --host 0.0.0.0 --port 8007 --reload
 

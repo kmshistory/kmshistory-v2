@@ -18,7 +18,7 @@ echo "🔧 백엔드 서버 시작 중... (포트 8007)"
 cd "$PROJECT_ROOT" || exit 1
 source .venv/bin/activate
 cd backend || exit 1
-nohup uvicorn app.main:app --host 0.0.0.0 --port 8007 --reload > "$LOG_DIR/backend-staging.log" 2>&1 &
+ENV_FILE=.env.staging nohup uvicorn app.main:app --host 0.0.0.0 --port 8007 --reload > "$LOG_DIR/backend-staging.log" 2>&1 &
 BACKEND_PID=$!
 echo "✅ 백엔드 서버 시작됨 (PID: $BACKEND_PID)"
 echo "📝 로그: $LOG_DIR/backend-staging.log"
