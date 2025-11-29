@@ -146,7 +146,7 @@ export default function QuizPlay() {
     } catch (error) {
       const status = error.response?.status;
       if (status === 404) {
-        setFetchError('조건에 맞는 문제가 없습니다. 필터를 변경 후 다시 시도해주세요.');
+        setFetchError(error.response?.data?.detail || '현재 출제된 문제가 없습니다.');
       } else {
         setFetchError('문제를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
       }
@@ -1140,15 +1140,6 @@ export default function QuizPlay() {
               <div className="px-8 py-16 text-center">
                 <h2 className="text-lg font-semibold text-gray-900">문제를 불러올 수 없습니다</h2>
                 <p className="mt-3 text-sm text-gray-600">{fetchError}</p>
-                <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={loadRandomQuestion}
-                    className="inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  >
-                    다시 시도
-                  </button>
-                </div>
               </div>
             ) : question ? (
               <div className="px-6 py-8 sm:px-10 sm:py-12">

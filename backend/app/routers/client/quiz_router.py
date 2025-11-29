@@ -71,7 +71,13 @@ def get_random_question(
 
     question = query.order_by(func.random()).first()
     if not question:
-        raise HTTPException(status_code=404, detail="문제가 없습니다.")
+        # 필터 적용 여부 확인 (bundle_id는 랜덤 모드에서 사용되지 않으므로 제외)
+        has_filter = category is not None or difficulty is not None or topic_id is not None
+        if has_filter:
+            detail = "해당 조건에 맞는 문제가 없습니다. 조건 변경 후 다시 검색해보세요."
+        else:
+            detail = "현재 출제된 문제가 없습니다."
+        raise HTTPException(status_code=404, detail=detail)
     return QuestionSchema(
         id=question.id,
         question_text=question.question_text,
