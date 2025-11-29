@@ -22,6 +22,27 @@ export const adminTheme = {
     }
   },
 
+  // 타이포그래피 설정 - Pretendard 폰트 전역 적용
+  typography: {
+    fontFamily: [
+      'Pretendard Variable',
+      'Pretendard',
+      '-apple-system',
+      'BlinkMacSystemFont',
+      'system-ui',
+      'Roboto',
+      'Helvetica Neue',
+      'Segoe UI',
+      'Apple SD Gothic Neo',
+      'Noto Sans KR',
+      'Malgun Gothic',
+      'Apple Color Emoji',
+      'Segoe UI Emoji',
+      'Segoe UI Symbol',
+      'sans-serif'
+    ].join(',')
+  },
+
   // 사이드바
   sidebar: {
     width: '15rem', // 240px
