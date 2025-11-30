@@ -11,7 +11,6 @@ class QuizType(str, Enum):
 
 
 class QuizCategory(str, Enum):
-    ALL = "ALL"
     PRE_MODERN_HISTORY = "PRE_MODERN_HISTORY"
     MODERN_HISTORY = "MODERN_HISTORY"
 
@@ -100,7 +99,7 @@ class AdminQuestionBase(BaseModel):
     correct_answer: str
     explanation: Optional[str] = None
     choices: Optional[List[AdminChoiceSchema]] = None
-    category: QuizCategory = QuizCategory.ALL
+    category: QuizCategory = QuizCategory.PRE_MODERN_HISTORY
     difficulty: QuizDifficulty = QuizDifficulty.STANDARD
     topic_ids: List[int] = []
     image_url: Optional[str] = None

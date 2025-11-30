@@ -8,7 +8,6 @@ const QUIZ_TYPES = [
 
 const CATEGORY_OPTIONS = [
   { value: '', label: '전체 분야' },
-  { value: 'ALL', label: '전체' },
   { value: 'PRE_MODERN_HISTORY', label: '전근대사' },
   { value: 'MODERN_HISTORY', label: '근현대사' },
 ];
@@ -20,7 +19,7 @@ const DIFFICULTY_OPTIONS = [
   { value: 'ADVANCED', label: '심화' },
 ];
 
-const DEFAULT_CATEGORY = 'ALL';
+const DEFAULT_CATEGORY = 'PRE_MODERN_HISTORY';
 const DEFAULT_DIFFICULTY = 'STANDARD';
 const MAX_IMAGE_SIZE_MB = 5;
 
@@ -339,7 +338,7 @@ function BundleQuestionManagerModal({
                         onChange={(event) => setQuestionCategoryFilter(event.target.value)}
                         className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        {CATEGORY_OPTIONS.map((option) => (
+                        {CATEGORY_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => (
                           <option key={option.value || 'all'} value={option.value}>
                             {option.label}
                           </option>
@@ -2097,7 +2096,7 @@ export default function QuizManager() {
                   }}
                   className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  {CATEGORY_OPTIONS.map((option) => (
+                  {CATEGORY_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => (
                     <option key={option.value || 'all'} value={option.value}>
                       {option.label}
                     </option>
@@ -2309,7 +2308,7 @@ export default function QuizManager() {
                 }}
                 className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {CATEGORY_OPTIONS.map((option) => (
+                {CATEGORY_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => (
                   <option key={option.value || 'all'} value={option.value}>
                     {option.label}
                   </option>

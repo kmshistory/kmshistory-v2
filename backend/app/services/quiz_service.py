@@ -206,7 +206,7 @@ def create_question(db: Session, *, data: AdminQuestionCreate) -> AdminQuestionR
         type=question_type,
         correct_answer=data.correct_answer.strip(),
         explanation=data.explanation.strip() if data.explanation else None,
-        category=_resolve_category(data.category) or ModelQuizCategory.ALL,
+        category=_resolve_category(data.category) or ModelQuizCategory.PRE_MODERN_HISTORY,
         difficulty=_resolve_difficulty(data.difficulty) or ModelQuizDifficulty.STANDARD,
         image_url=data.image_url.strip() if data.image_url else None,
     )
@@ -251,7 +251,7 @@ def update_question(
     question.type = question_type
     question.correct_answer = data.correct_answer.strip()
     question.explanation = data.explanation.strip() if data.explanation else None
-    question.category = _resolve_category(data.category) or ModelQuizCategory.ALL
+    question.category = _resolve_category(data.category) or ModelQuizCategory.PRE_MODERN_HISTORY
     question.difficulty = _resolve_difficulty(data.difficulty) or ModelQuizDifficulty.STANDARD
     question.image_url = data.image_url.strip() if data.image_url else None
 

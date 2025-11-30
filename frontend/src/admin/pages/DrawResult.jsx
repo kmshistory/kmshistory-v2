@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../../shared/api/client';
 
@@ -39,10 +39,10 @@ export default function DrawResult() {
     }
   }, [location.state, navigate]);
 
-  // 이탈 경고
+  // 이탈 경고 - 브라우저 새로고침/닫기/외부 이동 방지
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-      if (!isDataSaved && hasUnsavedChanges) {
+      if (!isDataSaved) {
         e.preventDefault();
         e.returnValue = '저장되지 않은 추첨 결과가 있습니다. 정말 페이지를 벗어나시겠습니까?';
         return e.returnValue;
@@ -51,7 +51,56 @@ export default function DrawResult() {
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isDataSaved, hasUnsavedChanges]);
+  }, [isDataSaved]);
+
+  // 뒤로가기/앞으로가기 버튼 방지
+  useEffect(() => {
+    if (isDataSaved) return;
+
+    // 현재 상태를 히스토리에 push하여 뒤로가기 감지 가능하게 함
+    window.history.pushState(null, '', window.location.href);
+
+    const handlePopState = (e) => {
+      if (!isDataSaved) {
+        if (!window.confirm('저장되지 않은 추첨 결과가 있습니다. 정말 페이지를 벗어나시겠습니까?')) {
+          // 다시 현재 상태를 히스토리에 push하여 위치 유지
+          window.history.pushState(null, '', window.location.href);
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isDataSaved]);
+
+  // location.pathname 변경 감지 (React Router 내부 네비게이션 방지)
+  const prevPathnameRef = useRef(location.pathname);
+  const isInitialMount = useRef(true);
+  
+  useEffect(() => {
+    // 초기 마운트 시에는 경고하지 않음
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      prevPathnameRef.current = location.pathname;
+      return;
+    }
+
+    if (isDataSaved) {
+      prevPathnameRef.current = location.pathname;
+      return;
+    }
+
+    // 경로가 변경되려 할 때 (다른 페이지로 이동)
+    if (location.pathname !== prevPathnameRef.current && location.pathname !== '/admin/draw/result') {
+      if (!window.confirm('저장되지 않은 추첨 결과가 있습니다. 정말 페이지를 벗어나시겠습니까?')) {
+        // 원래 위치로 되돌리기
+        navigate(prevPathnameRef.current, { replace: true });
+        return;
+      }
+    }
+
+    prevPathnameRef.current = location.pathname;
+  }, [location.pathname, isDataSaved, navigate]);
 
   const formatDate = (date) => {
     if (!date) return '-';
@@ -126,8 +175,8 @@ export default function DrawResult() {
     }
   };
 
-  const handleLinkClick = (e, href) => {
-    if (!isDataSaved && hasUnsavedChanges) {
+  const handleLinkClick = (e) => {
+    if (!isDataSaved) {
       if (!window.confirm('저장되지 않은 추첨 결과가 있습니다. 정말 페이지를 벗어나시겠습니까?')) {
         e.preventDefault();
         return false;
