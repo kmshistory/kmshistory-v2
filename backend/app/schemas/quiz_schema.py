@@ -17,9 +17,9 @@ class QuizCategory(str, Enum):
 
 
 class QuizDifficulty(str, Enum):
-    BASIC = "기초"
-    STANDARD = "보통"
-    ADVANCED = "심화"
+    BASIC = "BASIC"
+    STANDARD = "STANDARD"
+    ADVANCED = "ADVANCED"
 
 
 class TopicBase(BaseModel):

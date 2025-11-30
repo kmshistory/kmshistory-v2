@@ -74,15 +74,6 @@ def _resolve_difficulty(value: QuizDifficulty | str | None) -> Optional[ModelQui
         return None
     raw_value = value.value if isinstance(value, QuizDifficulty) else str(value)
     
-    # 영어 키를 한글 값으로 매핑 (프론트엔드 호환성)
-    difficulty_mapping = {
-        "BASIC": "기초",
-        "STANDARD": "보통",
-        "ADVANCED": "심화",
-    }
-    if raw_value in difficulty_mapping:
-        raw_value = difficulty_mapping[raw_value]
-    
     try:
         return ModelQuizDifficulty(raw_value)
     except ValueError as exc:

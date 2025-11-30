@@ -25,9 +25,9 @@ class QuizCategory(enum.Enum):
 
 
 class QuizDifficulty(enum.Enum):
-    BASIC = "기초"
-    STANDARD = "보통"
-    ADVANCED = "심화"
+    BASIC = "BASIC"
+    STANDARD = "STANDARD"
+    ADVANCED = "ADVANCED"
 
 
 class Question(Base):
