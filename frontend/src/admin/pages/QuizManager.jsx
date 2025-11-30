@@ -8,21 +8,20 @@ const QUIZ_TYPES = [
 
 const CATEGORY_OPTIONS = [
   { value: '', label: '전체 분야' },
-  { value: 'KOREAN_HISTORY', label: '한국사' },
+  { value: 'ALL', label: '전체' },
+  { value: 'PRE_MODERN_HISTORY', label: '전근대사' },
   { value: 'MODERN_HISTORY', label: '근현대사' },
-  { value: 'WORLD_HISTORY', label: '세계사' },
-  { value: 'GENERAL_HISTORY', label: '종합' },
 ];
 
 const DIFFICULTY_OPTIONS = [
   { value: '', label: '전체 난이도' },
-  { value: 'EASY', label: '기초' },
-  { value: 'MEDIUM', label: '보통' },
-  { value: 'HARD', label: '심화' },
+  { value: 'BASIC', label: '기초' },
+  { value: 'STANDARD', label: '보통' },
+  { value: 'ADVANCED', label: '심화' },
 ];
 
-const DEFAULT_CATEGORY = 'GENERAL_HISTORY';
-const DEFAULT_DIFFICULTY = 'MEDIUM';
+const DEFAULT_CATEGORY = 'ALL';
+const DEFAULT_DIFFICULTY = 'STANDARD';
 const MAX_IMAGE_SIZE_MB = 5;
 
 const typeLabel = (value) => QUIZ_TYPES.find((item) => item.value === value)?.label || value;

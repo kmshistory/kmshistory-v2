@@ -19,16 +19,15 @@ class QuestionType(enum.Enum):
     SHORT = "SHORT"        # 단답형/서술형
 
 class QuizCategory(enum.Enum):
-    KOREAN_HISTORY = "KOREAN_HISTORY"
+    ALL = "ALL"
+    PRE_MODERN_HISTORY = "PRE_MODERN_HISTORY"
     MODERN_HISTORY = "MODERN_HISTORY"
-    WORLD_HISTORY = "WORLD_HISTORY"
-    GENERAL_HISTORY = "GENERAL_HISTORY"
 
 
 class QuizDifficulty(enum.Enum):
-    EASY = "EASY"
-    MEDIUM = "MEDIUM"
-    HARD = "HARD"
+    BASIC = "BASIC"
+    STANDARD = "STANDARD"
+    ADVANCED = "ADVANCED"
 
 
 class Question(Base):
@@ -40,8 +39,8 @@ class Question(Base):
     correct_answer = Column(Text, nullable=False)
     explanation = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
-    category = Column(Enum(QuizCategory), nullable=False, default=QuizCategory.GENERAL_HISTORY)
-    difficulty = Column(Enum(QuizDifficulty), nullable=False, default=QuizDifficulty.MEDIUM)
+    category = Column(Enum(QuizCategory), nullable=False, default=QuizCategory.ALL)
+    difficulty = Column(Enum(QuizDifficulty), nullable=False, default=QuizDifficulty.STANDARD)
     image_url = Column(String(512))
 
     # 객관식 보기들 (MULTIPLE일 때만 존재)

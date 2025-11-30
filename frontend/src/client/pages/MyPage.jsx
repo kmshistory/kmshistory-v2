@@ -3,16 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import apiClient from '../../shared/api/client';
 
 const CATEGORY_LABELS = {
-  KOREAN_HISTORY: '한국사',
+  ALL: '전체',
+  PRE_MODERN_HISTORY: '전근대사',
   MODERN_HISTORY: '근현대사',
-  WORLD_HISTORY: '세계사',
-  GENERAL_HISTORY: '종합',
 };
 
 const DIFFICULTY_LABELS = {
-  EASY: '기초',
-  MEDIUM: '보통',
-  HARD: '심화',
+  BASIC: '기초',
+  STANDARD: '보통',
+  ADVANCED: '심화',
 };
 
 const categoryLabel = (value) => {

@@ -9,17 +9,16 @@ const MODE_OPTIONS = [
 
 const CATEGORY_OPTIONS = [
   { value: '', label: '전체 분야' },
-  { value: 'KOREAN_HISTORY', label: '한국사' },
+  { value: 'ALL', label: '전체' },
+  { value: 'PRE_MODERN_HISTORY', label: '전근대사' },
   { value: 'MODERN_HISTORY', label: '근현대사' },
-  { value: 'WORLD_HISTORY', label: '세계사' },
-  { value: 'GENERAL_HISTORY', label: '종합' },
 ];
 
 const DIFFICULTY_OPTIONS = [
   { value: '', label: '전체 난이도' },
-  { value: 'EASY', label: '기초' },
-  { value: 'MEDIUM', label: '보통' },
-  { value: 'HARD', label: '심화' },
+  { value: 'BASIC', label: '기초' },
+  { value: 'STANDARD', label: '보통' },
+  { value: 'ADVANCED', label: '심화' },
 ];
 
 const QUIZ_TYPE_LABEL = {
@@ -899,7 +898,7 @@ export default function QuizPlay() {
         <div className="mb-8 flex flex-col gap-6">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-600">
-              History Quiz Lab
+              한국사 퀴즈
             </div>
             <div className="mt-4 flex flex-wrap gap-3">
               {MODE_OPTIONS.map((option) => {

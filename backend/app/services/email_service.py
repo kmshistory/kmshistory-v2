@@ -93,7 +93,7 @@ async def send_signup_confirmation_email(email: str, nickname: str, confirm_link
       <h1>강민성 한국사</h1>
     </div>
     <div class="content">
-      <h2>안녕하세요, {nickname or '회원님'}!</h2>
+      <h2>안녕하세요, {nickname or '회원님'} 님!</h2>
       <p class="small">회원가입을 완료하시려면 아래 버튼을 클릭해 이메일을 인증해주세요.</p>
       <div style="text-align: center;">
         <a href="{confirm_link}" class="cta" target="_blank" rel="noopener">가입 완료하기</a>
@@ -141,14 +141,14 @@ async def send_welcome_email(email: str, nickname: str):
             subject="강민성 한국사 회원가입을 환영합니다!",
             recipients=[email],
             body=f"""
-안녕하세요. {nickname}님!
+안녕하세요. {nickname} 님!
 
-강민성 한국사 회원가입을 환영합니다.
+회원가입을 환영합니다.
 
-이제 강민성 한국사의 모든 서비스를 이용하실 수 있습니다.
+이제 사이트의 모든 서비스를 이용하실 수 있습니다.
 
 감사합니다.
-강민성 한국사
+강민성 한국사 드림.
         """,
             subtype="plain"
         )
