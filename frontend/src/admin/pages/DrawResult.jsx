@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../../shared/api/client';
 
@@ -39,10 +39,10 @@ export default function DrawResult() {
     }
   }, [location.state, navigate]);
 
-  // 이탈 경고
+  // 이탈 경고 - 브라우저 새로고침/닫기/외부 이동 방지
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-      if (!isDataSaved && hasUnsavedChanges) {
+      if (!isDataSaved) {
         e.preventDefault();
         e.returnValue = '저장되지 않은 추첨 결과가 있습니다. 정말 페이지를 벗어나시겠습니까?';
         return e.returnValue;
@@ -51,7 +51,117 @@ export default function DrawResult() {
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isDataSaved, hasUnsavedChanges]);
+  }, [isDataSaved]);
+
+  // 뒤로가기/앞으로가기 버튼 방지
+  useEffect(() => {
+    if (isDataSaved) return;
+
+    // 현재 상태를 히스토리에 push하여 뒤로가기 감지 가능하게 함
+    window.history.pushState(null, '', window.location.href);
+
+    const handlePopState = (e) => {
+      if (!isDataSaved) {
+        if (!window.confirm('저장되지 않은 추첨 결과가 있습니다. 정말 페이지를 벗어나시겠습니까?')) {
+          // 다시 현재 상태를 히스토리에 push하여 위치 유지
+          window.history.pushState(null, '', window.location.href);
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isDataSaved]);
+
+  // 전역 클릭 이벤트 리스너 - 모든 링크 클릭 감지 (Django 템플릿 방식)
+  useEffect(() => {
+    if (isDataSaved) return;
+
+    const handleClick = (e) => {
+      // Link나 a 태그 클릭 감지
+      const link = e.target.closest('a[href]');
+      if (link) {
+        const href = link.getAttribute('href');
+        if (!href) return;
+
+        // 앵커 링크, JavaScript, mailto, tel 링크는 무시
+        if (href.startsWith('#') || 
+            href.startsWith('javascript:') ||
+            href.startsWith('mailto:') ||
+            href.startsWith('tel:')) {
+          return;
+        }
+
+        // 같은 사이트 내 페이지로 이동하는 경우 체크
+        try {
+          const currentPath = location.pathname;
+          // 절대 경로인 경우
+          if (href.startsWith('/')) {
+            // 같은 페이지가 아니면 경고
+            if (href !== currentPath && href !== '/admin/draw/result') {
+              if (!window.confirm('저장되지 않은 추첨 결과가 있습니다. 정말 페이지를 벗어나시겠습니까?')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+              }
+            }
+          }
+          // 상대 경로이거나 전체 URL인 경우도 체크 (외부 링크 제외)
+          else if (!href.startsWith('http://') && !href.startsWith('https://')) {
+            // 상대 경로인 경우 - 기본적으로 경고 (다른 페이지로 이동 가능성이 높음)
+            if (href !== currentPath && href !== './' && href !== '') {
+              if (!window.confirm('저장되지 않은 추첨 결과가 있습니다. 정말 페이지를 벗어나시겠습니까?')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+              }
+            }
+          }
+        } catch (err) {
+          // href 파싱 중 오류 발생 시 무시
+          console.error('Link href parsing error:', err);
+        }
+      }
+    };
+
+    // Capture phase에서 리스너 추가 (가장 먼저 실행되어 다른 핸들러보다 우선)
+    document.addEventListener('click', handleClick, true);
+
+    return () => {
+      document.removeEventListener('click', handleClick, true);
+    };
+  }, [isDataSaved, location.pathname]);
+
+  // location.pathname 변경 감지 (React Router 내부 네비게이션 방지 - 보조용)
+  const prevPathnameRef = useRef(location.pathname);
+  const isInitialMount = useRef(true);
+  
+  useEffect(() => {
+    // 초기 마운트 시에는 경고하지 않음
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      prevPathnameRef.current = location.pathname;
+      return;
+    }
+
+    if (isDataSaved) {
+      prevPathnameRef.current = location.pathname;
+      return;
+    }
+
+    // 경로가 변경되려 할 때 (다른 페이지로 이동)
+    if (location.pathname !== prevPathnameRef.current && location.pathname !== '/admin/draw/result') {
+      if (!window.confirm('저장되지 않은 추첨 결과가 있습니다. 정말 페이지를 벗어나시겠습니까?')) {
+        // 원래 위치로 되돌리기
+        navigate(prevPathnameRef.current, { replace: true });
+        return;
+      }
+    }
+
+    prevPathnameRef.current = location.pathname;
+  }, [location.pathname, isDataSaved, navigate]);
 
   const formatDate = (date) => {
     if (!date) return '-';
@@ -126,15 +236,6 @@ export default function DrawResult() {
     }
   };
 
-  const handleLinkClick = (e, href) => {
-    if (!isDataSaved && hasUnsavedChanges) {
-      if (!window.confirm('저장되지 않은 추첨 결과가 있습니다. 정말 페이지를 벗어나시겠습니까?')) {
-        e.preventDefault();
-        return false;
-      }
-    }
-    return true;
-  };
 
   const handlePrint = () => {
     window.print();
@@ -278,7 +379,6 @@ export default function DrawResult() {
         </button>
         <Link
           to="/admin/draw/select"
-          onClick={(e) => handleLinkClick(e)}
           className="inline-flex items-center justify-center px-4 sm:px-6 py-3 border border-transparent text-sm sm:text-base font-medium rounded-md shadow-sm text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
         >
           <i className="fas fa-redo text-lg mr-2"></i>
@@ -286,7 +386,6 @@ export default function DrawResult() {
         </Link>
         <Link
           to="/admin/participants"
-          onClick={(e) => handleLinkClick(e)}
           className="inline-flex items-center justify-center px-4 sm:px-6 py-3 border border-gray-300 text-sm sm:text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
         >
           <i className="fas fa-arrow-left text-lg mr-2"></i>
