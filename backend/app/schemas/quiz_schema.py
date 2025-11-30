@@ -11,16 +11,15 @@ class QuizType(str, Enum):
 
 
 class QuizCategory(str, Enum):
-    KOREAN_HISTORY = "KOREAN_HISTORY"
+    ALL = "ALL"
+    PRE_MODERN_HISTORY = "PRE_MODERN_HISTORY"
     MODERN_HISTORY = "MODERN_HISTORY"
-    WORLD_HISTORY = "WORLD_HISTORY"
-    GENERAL_HISTORY = "GENERAL_HISTORY"
 
 
 class QuizDifficulty(str, Enum):
-    EASY = "EASY"
-    MEDIUM = "MEDIUM"
-    HARD = "HARD"
+    BASIC = "기초"
+    STANDARD = "보통"
+    ADVANCED = "심화"
 
 
 class TopicBase(BaseModel):
@@ -101,8 +100,8 @@ class AdminQuestionBase(BaseModel):
     correct_answer: str
     explanation: Optional[str] = None
     choices: Optional[List[AdminChoiceSchema]] = None
-    category: QuizCategory = QuizCategory.GENERAL_HISTORY
-    difficulty: QuizDifficulty = QuizDifficulty.MEDIUM
+    category: QuizCategory = QuizCategory.ALL
+    difficulty: QuizDifficulty = QuizDifficulty.STANDARD
     topic_ids: List[int] = []
     image_url: Optional[str] = None
 
