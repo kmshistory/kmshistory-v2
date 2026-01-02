@@ -186,7 +186,7 @@ export default function Home() {
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-5xl mx-auto" style={{ minHeight: '100px' }}>
           {/* 인스타그램 */}
           <a
-            href="https://instagram.com/thekmshistory"
+            href="https://instagram.com/kmslab0909"
             target="_blank"
             rel="noreferrer"
             className="card-hover rounded-lg"
@@ -215,7 +215,7 @@ export default function Home() {
               <div className="flex-1 text-left">
                 <h3 className="text-white text-base sm:text-lg font-semibold mb-1">인스타그램</h3>
                 <p className="text-white text-sm opacity-80 leading-tight" style={{ wordBreak: 'keep-all', lineHeight: '1.3', maxWidth: '200px' }}>
-                  @thekmshistory
+                  @kmslab0909
                 </p>
               </div>
             </div>
