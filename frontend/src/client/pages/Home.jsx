@@ -158,7 +158,7 @@ export default function Home() {
               <div>
                 <div className="text-white text-sm font-medium mb-2">네이버 카페</div>
                 <div className="text-white text-2xl font-bold mb-2">
-                  강민성의 정통한국사
+                  강민성 한국사
                 </div>
                 <div className="text-white text-sm opacity-90">
                   수강생 커뮤니티 참여하기
