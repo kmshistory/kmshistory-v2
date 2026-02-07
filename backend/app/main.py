@@ -202,6 +202,8 @@ app.add_middleware(
         "http://localhost:3004",  # 프론트엔드 개발 서버
         "http://localhost:8006",  # 백엔드 서버 (직접 접속용)
         "http://127.0.0.1:8006",  # IPv4 직접 접속용
+        "http://localhost:8009",  # 스테이징 백엔드 (직접 접속용)
+        "http://127.0.0.1:8009",  # 스테이징 IPv4 직접 접속용
         "https://staging.kmshistory.kr",  # 스테이징 서버
         "https://kmshistory.kr",  # 운영 서버
     ],
