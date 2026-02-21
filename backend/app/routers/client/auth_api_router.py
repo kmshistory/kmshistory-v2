@@ -1,28 +1,181 @@
 # app/routers/auth_api_router.py
-from fastapi import APIRouter, Request, Depends
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Request, Depends, Query
+from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.services import auth_service
+from app.services.social_auth_service import (
+    get_google_login_url_simple,
+    exchange_google_code_for_userinfo,
+)
+from app.services.naver_auth_service import get_naver_login_url, exchange_naver_code_for_userinfo
+from app.utils.auth import create_pending_signup_token
 from app.utils.auth import get_current_user_from_cookie
+from app.config import settings
 
 router = APIRouter(prefix="/api/auth", tags=["Auth:API"])
 
+
+# ---------- 구글 로그인 (클라이언트) ----------
+@router.get("/google")
+async def auth_google_start():
+    """구글 로그인 시작. 기존 유저=즉시 로그인, 신규=약관 동의 후 complete-signup."""
+    url = get_google_login_url_simple()
+    return RedirectResponse(url=url, status_code=302)
+
+
+@router.get("/google/callback")
+async def auth_google_callback(
+    code: str | None = Query(None),
+    error: str | None = Query(None),
+    db: Session = Depends(get_db),
+):
+    """구글 로그인 콜백. 기존 유저=즉시 로그인, 신규=pending_signup 토큰으로 리다이렉트."""
+    from fastapi import Response
+
+    if error:
+        redirect_url = f"{settings.FRONTEND_URL.rstrip('/')}/login?error={error}"
+        return RedirectResponse(url=redirect_url, status_code=302)
+    if not code:
+        redirect_url = f"{settings.FRONTEND_URL.rstrip('/')}/login?error=no_code"
+        return RedirectResponse(url=redirect_url, status_code=302)
+
+    try:
+        userinfo = exchange_google_code_for_userinfo(code)
+    except Exception:
+        redirect_url = f"{settings.FRONTEND_URL.rstrip('/')}/login?error=google_auth_failed"
+        return RedirectResponse(url=redirect_url, status_code=302)
+
+    from app.models import User
+    user = db.query(User).filter(User.email == (userinfo.get("email") or "").strip()).first()
+
+    if user:
+        response = Response()
+        try:
+            auth_service.google_login_or_register_service(userinfo, response, db, agreement=None)
+        except Exception:
+            redirect_url = f"{settings.FRONTEND_URL.rstrip('/')}/login?error=login_failed"
+            return RedirectResponse(url=redirect_url, status_code=302)
+        redirect_url = settings.FRONTEND_URL.rstrip("/")
+        res = RedirectResponse(url=redirect_url, status_code=302)
+        for name, value in response.headers.items():
+            if name.lower() == "set-cookie":
+                res.headers.append(name, value)
+        return res
+
+    pending_token = create_pending_signup_token(userinfo)
+    redirect_url = f"{settings.FRONTEND_URL.rstrip('/')}/login?pending_signup={pending_token}"
+    return RedirectResponse(url=redirect_url, status_code=302)
+
+
+# ---------- 네이버 로그인 (클라이언트) ----------
+@router.get("/naver")
+async def auth_naver_start():
+    """네이버 로그인 시작."""
+    url = get_naver_login_url()
+    return RedirectResponse(url=url, status_code=302)
+
+
+@router.get("/naver/callback")
+async def auth_naver_callback(
+    code: str | None = Query(None),
+    state: str | None = Query(None),
+    error: str | None = Query(None),
+    error_description: str | None = Query(None),
+    db: Session = Depends(get_db),
+):
+    """네이버 로그인 콜백."""
+    from fastapi import Response
+
+    if error:
+        err_msg = error_description or error
+        redirect_url = f"{settings.FRONTEND_URL.rstrip('/')}/login?error=naver_auth_failed"
+        if err_msg:
+            from urllib.parse import quote
+            redirect_url += f"&error_detail={quote(str(err_msg))}"
+        return RedirectResponse(url=redirect_url, status_code=302)
+    if not code:
+        redirect_url = f"{settings.FRONTEND_URL.rstrip('/')}/login?error=no_code"
+        return RedirectResponse(url=redirect_url, status_code=302)
+
+    try:
+        userinfo = exchange_naver_code_for_userinfo(code)
+    except Exception:
+        redirect_url = f"{settings.FRONTEND_URL.rstrip('/')}/login?error=naver_auth_failed"
+        return RedirectResponse(url=redirect_url, status_code=302)
+
+    from app.models import User
+    user = db.query(User).filter(User.email == (userinfo.get("email") or "").strip()).first()
+
+    if user:
+        response = Response()
+        try:
+            auth_service.google_login_or_register_service(userinfo, response, db, agreement=None)
+        except Exception:
+            redirect_url = f"{settings.FRONTEND_URL.rstrip('/')}/login?error=login_failed"
+            return RedirectResponse(url=redirect_url, status_code=302)
+        redirect_url = settings.FRONTEND_URL.rstrip("/")
+        res = RedirectResponse(url=redirect_url, status_code=302)
+        for name, value in response.headers.items():
+            if name.lower() == "set-cookie":
+                res.headers.append(name, value)
+        return res
+
+    pending_token = create_pending_signup_token(userinfo)
+    redirect_url = f"{settings.FRONTEND_URL.rstrip('/')}/login?pending_signup={pending_token}"
+    return RedirectResponse(url=redirect_url, status_code=302)
+
+
+@router.post("/google/complete-signup")
+async def google_complete_signup(request: Request, db: Session = Depends(get_db)):
+    """신규 가입 시 약관 동의 후 가입 완료 (pending_signup 토큰 필수)."""
+    from fastapi import Response
+
+    try:
+        body = await request.json()
+        pending_token = body.get("pending_signup", "").strip()
+        if not pending_token:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail="pending_signup 토큰이 필요합니다.")
+
+        agreement = {
+            "agree_terms": bool(body.get("agree_terms")),
+            "agree_privacy": bool(body.get("agree_privacy")),
+            "agree_collection": bool(body.get("agree_collection")),
+            "agree_marketing": bool(body.get("agree_marketing")),
+        }
+        if not (agreement["agree_terms"] and agreement["agree_privacy"] and agreement["agree_collection"]):
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail="필수 약관에 모두 동의해 주세요.")
+
+        response = Response()
+        auth_service.google_complete_signup_service(pending_token, agreement, response, db)
+        json_res = JSONResponse({"message": "회원가입이 완료되었습니다."})
+        for name, value in response.headers.items():
+            if name.lower() == "set-cookie":
+                json_res.headers.append(name, value)
+        return json_res
+    except Exception as e:
+        from fastapi import HTTPException
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(status_code=400, detail=str(e) or "가입 완료 처리에 실패했습니다.")
+
+
+# ---------- 로컬 회원가입 비활성화 (구글 로그인만 사용) ----------
 @router.post("/register")
 async def register(request: Request, db: Session = Depends(get_db)):
-    result = await auth_service.register_service(request, db)
-    return JSONResponse(result)
+    from fastapi import HTTPException
+    raise HTTPException(status_code=410, detail="회원가입은 구글 로그인으로만 가능합니다.")
 
 @router.post("/login")
 async def login(request: Request, db: Session = Depends(get_db)):
+    """로컬 로그인 (관리자용 이메일/비밀번호). 일반 유저는 구글 로그인 사용."""
     from fastapi import Response
     try:
         response = Response()
         result = await auth_service.login_service(request, response, db)
-        # 쿠키가 이미 response에 세팅됨
-        # JSONResponse를 생성하고 쿠키를 복사
         json_response = JSONResponse(result)
-        # 쿠키 헤더 복사
         for header_name, header_value in response.headers.items():
             if header_name.lower() == "set-cookie":
                 json_response.headers.append(header_name, header_value)
@@ -46,12 +199,17 @@ async def logout():
 
 @router.get("/verify-signup")
 async def verify_signup(token: str, db: Session = Depends(get_db)):
-    result = await auth_service.verify_signup_token_service(token, db)
-    return JSONResponse(result)
+    from fastapi import HTTPException
+    raise HTTPException(status_code=410, detail="회원가입은 구글 로그인으로만 가능합니다.")
 
 @router.post("/check-email")
 async def check_email(request: Request, db: Session = Depends(get_db)):
-    """이메일 중복 확인"""
+    from fastapi import HTTPException
+    raise HTTPException(status_code=410, detail="회원가입은 구글 로그인으로만 가능합니다.")
+
+@router.post("/check-email_unused")
+async def check_email_unused(request: Request, db: Session = Depends(get_db)):
+    """이메일 중복 확인 (구글 전용으로 비활성화)."""
     try:
         result = await auth_service.check_email_duplicate_service(request, db)
         return JSONResponse(result)
@@ -69,7 +227,12 @@ async def check_email(request: Request, db: Session = Depends(get_db)):
 
 @router.post("/check-nickname")
 async def check_nickname(request: Request, db: Session = Depends(get_db)):
-    """닉네임 중복 확인"""
+    from fastapi import HTTPException
+    raise HTTPException(status_code=410, detail="회원가입은 구글 로그인으로만 가능합니다.")
+
+@router.post("/check-nickname_unused")
+async def check_nickname_unused(request: Request, db: Session = Depends(get_db)):
+    """닉네임 중복 확인 (구글 전용으로 비활성화)."""
     result = await auth_service.check_nickname_duplicate_service(request, db)
     return JSONResponse(result)
 

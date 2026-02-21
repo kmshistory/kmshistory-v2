@@ -243,6 +243,96 @@ def logout_service(response):
     clear_auth_cookie(response)
     return {"message": "로그아웃 되었습니다."}
 
+
+def _make_unique_nickname(db: Session, base_nickname: str) -> str:
+    """닉네임이 이미 있으면 숫자 접미사로 유일하게 만든다."""
+    import re
+    # 한글/영문/숫자만 2~15자로 자르기
+    raw = re.sub(r"[^\w가-힣]", "", base_nickname or "user")[:15]
+    if len(raw) < 2:
+        raw = "user"
+    nickname = raw
+    suffix = 0
+    while db.query(User).filter(User.nickname == nickname).first() is not None:
+        suffix += 1
+        nickname = f"{raw}{suffix}"[:15]
+    return nickname
+
+
+def google_login_or_register_service(
+    userinfo: dict, response, db: Session, agreement: dict | None = None
+) -> "User":
+    """
+    구글 userinfo로 로그인 또는 자동 가입 후 JWT 쿠키 설정.
+    userinfo: {"email": str, "name": str, "picture": str | None}
+    agreement: {"agree_terms", "agree_privacy", "agree_collection", "agree_marketing"} (신규 가입 시 필수)
+    """
+    email = (userinfo.get("email") or "").strip()
+    name = (userinfo.get("name") or email or "사용자").strip()
+    if not email:
+        raise HTTPException(status_code=400, detail="이메일 정보를 가져올 수 없습니다.")
+
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        if not user.is_active:
+            raise HTTPException(403, "비활성화된 계정입니다.")
+        if user.is_blocked:
+            raise HTTPException(403, "차단된 계정입니다. 관리자에게 문의하세요.")
+    else:
+        # 신규 가입: 약관 동의 반영, 닉네임 생성
+        ag = agreement or {}
+        agree_terms = ag.get("agree_terms", True)
+        agree_privacy = ag.get("agree_privacy", True)
+        agree_collection = ag.get("agree_collection", True)
+        agree_marketing = ag.get("agree_marketing", False)
+
+        nickname = _make_unique_nickname(db, name)
+        placeholder_hash = get_password_hash(secrets.token_urlsafe(32))
+        user = User(
+            email=email,
+            password_hash=placeholder_hash,
+            nickname=nickname,
+            role="member",
+            is_active=True,
+            is_email_verified=True,
+            created_at=datetime.now(timezone.utc),
+            agree_terms=agree_terms,
+            agree_privacy=agree_privacy,
+            agree_collection=agree_collection,
+            agree_marketing=agree_marketing,
+        )
+        db.add(user)
+        db.flush()
+        notif = Notification(
+            type="user_joined",
+            title=f"{user.nickname}님이 가입했습니다",
+            content=f"Google 로그인으로 가입했습니다. 이메일: {user.email}",
+            related_id=user.id,
+            created_at=datetime.now(timezone.utc),
+        )
+        db.add(notif)
+        db.commit()
+        db.refresh(user)
+
+    expires_delta = timedelta(days=30)
+    token = create_access_token({"sub": str(user.id), "role": user.role}, expires_delta)
+    set_auth_cookie(response, token, expires_delta)
+    return user
+
+
+def google_complete_signup_service(
+    pending_token: str,
+    agreement: dict,
+    response,
+    db: Session,
+) -> "User":
+    """pending_signup 토큰 검증 후 약관 동의와 함께 신규 가입 완료 및 로그인."""
+    from app.utils.auth import verify_pending_signup_token
+
+    userinfo = verify_pending_signup_token(pending_token)
+    return google_login_or_register_service(userinfo, response, db, agreement=agreement)
+
+
 async def check_email_duplicate_service(request, db: Session):
     """회원가입 전 이메일 중복 확인"""
     import re

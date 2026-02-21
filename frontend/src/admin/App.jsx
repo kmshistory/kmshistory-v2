@@ -1,8 +1,30 @@
 import React from "react";
 import { Admin, Resource, CustomRoutes } from "react-admin";
 import { Route } from "react-router-dom";
+import polyglotI18nProvider from "ra-i18n-polyglot";
+import englishMessages from "ra-language-english";
 import { authProvider } from "./authProvider";
 import { dataProvider } from "./dataProvider";
+
+const koreanMessages = {
+  ...englishMessages,
+  ra: {
+    ...englishMessages.ra,
+    auth: {
+      ...englishMessages.ra.auth,
+      username: "아이디",
+      password: "비밀번호",
+      sign_in: "로그인",
+    },
+  },
+};
+
+const i18nProvider = polyglotI18nProvider(
+  () => koreanMessages,
+  "ko",
+  [{ locale: "ko", name: "한국어" }],
+  { allowMissing: true }
+);
 import AdminLayout from "./components/AdminLayout";
 import { adminTheme } from "./styles/AdminTheme";
 import Dashboard from "./pages/Dashboard";
@@ -32,6 +54,7 @@ export default function AdminApp() {
       basename="/admin"
       authProvider={authProvider}
       dataProvider={dataProvider}
+      i18nProvider={i18nProvider}
       layout={(props) => (
         <AdminLayout {...props} theme={adminTheme}>
           {props.children}
