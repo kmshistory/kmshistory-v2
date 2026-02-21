@@ -312,8 +312,8 @@ export default function Notices() {
         </div>
       )}
 
-      {/* 페이지네이션 */}
-      {!loading && !error && totalPages > 1 && (
+      {/* 페이지네이션 (1페이지만 있어도 번호 UI 표시) */}
+      {!loading && !error && totalPages >= 1 && (
         <div className="flex justify-center items-center mt-12 mb-16">
           <div className="flex items-center space-x-1">
             {/* << 첫 페이지 */}
