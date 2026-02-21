@@ -32,15 +32,15 @@ async def mark_all_as_read(request: Request, db: Session = Depends(get_db)):
     require_admin(request, db)
     return notification_service.mark_all_as_read(db)
 
-@router.delete("/{notification_id}")
-async def delete_notification(request: Request, notification_id: int, db: Session = Depends(get_db)):
-    require_admin(request, db)
-    return notification_service.delete_notification(db, notification_id)
-
 @router.delete("/clear-all")
 async def clear_all(request: Request, db: Session = Depends(get_db)):
     require_admin(request, db)
     return notification_service.clear_all(db)
+
+@router.delete("/{notification_id}")
+async def delete_notification(request: Request, notification_id: int, db: Session = Depends(get_db)):
+    require_admin(request, db)
+    return notification_service.delete_notification(db, notification_id)
 
 # 최근 활동 조회
 @router.get("/recent", response_model=list[RecentActivityItem])

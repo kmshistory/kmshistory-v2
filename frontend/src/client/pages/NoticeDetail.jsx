@@ -7,6 +7,7 @@ export default function NoticeDetail() {
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState(null);
   const [error, setError] = useState(null);
+  const [neighbors, setNeighbors] = useState({ prev: null, next: null });
 
   // 페이지 타이틀 설정
   useEffect(() => {
@@ -18,6 +19,7 @@ export default function NoticeDetail() {
 
   useEffect(() => {
     if (id) {
+      window.scrollTo(0, 0);
       fetchNotice();
     } else {
       setError('공지사항 ID가 없습니다.');
@@ -26,13 +28,19 @@ export default function NoticeDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  useEffect(() => {
+    if (id) {
+      apiClient.get(`/notices/${id}/neighbors`).then((res) => setNeighbors(res.data)).catch(() => setNeighbors({ prev: null, next: null }));
+    }
+  }, [id]);
+
   const fetchNotice = async () => {
     if (!id) {
       setError('공지사항 ID가 없습니다.');
       setLoading(false);
       return;
     }
-    
+
     setLoading(true);
     setError(null);
     try {
@@ -75,7 +83,7 @@ export default function NoticeDetail() {
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <i className="fas fa-exclamation-circle text-red-600 text-2xl mb-2"></i>
             <p className="text-red-700">{error}</p>
-            <Link to="/notices" className="mt-4 inline-block px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700">
+            <Link to="/notices" className="btn-danger mt-4 inline-block">
               목록으로
             </Link>
           </div>
@@ -108,7 +116,7 @@ export default function NoticeDetail() {
           <div className="p-6 pb-4 border-b border-gray-200">
             <div className="flex items-center space-x-3 mb-4">
               {notice.category_name && (
-                <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
                   {notice.category_name}
                 </span>
               )}
@@ -131,14 +139,33 @@ export default function NoticeDetail() {
           </div>
         </article>
 
-        {/* Navigation Buttons */}
-        <div className="mt-8 flex justify-center">
-          <Link
-            to="/notices"
-            className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-          >
-            목록으로
-          </Link>
+        {/* 이전글 / 다음글 네비 영역 */}
+        <div className="mt-12 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x border-b border-gray-200 dark:border-gray-700 divide-gray-200 dark:divide-gray-700">
+            <div className="flex-1 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <span className="block text-xs text-gray-500 mb-1">▲ 이전글</span>
+              {neighbors.prev ? (
+                <Link to={`/notices/${neighbors.prev.id}`} className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate block">
+                  {neighbors.prev.title}
+                </Link>
+              ) : (
+                <span className="text-sm text-gray-400">이전글이 없습니다.</span>
+              )}
+            </div>
+            <div className="flex-1 p-4 text-right hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <span className="block text-xs text-gray-500 mb-1">▼ 다음글</span>
+              {neighbors.next ? (
+                <Link to={`/notices/${neighbors.next.id}`} className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate block">
+                  {neighbors.next.title}
+                </Link>
+              ) : (
+                <span className="text-sm text-gray-400">다음글이 없습니다.</span>
+              )}
+            </div>
+          </div>
+          <div className="mt-6 flex justify-center">
+            <Link to="/notices" className="btn-outline px-6">목록으로</Link>
+          </div>
         </div>
       </div>
 

@@ -231,17 +231,7 @@ export default function EditProfile() {
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500 mb-4">{error}</p>
-          <button
-            onClick={fetchUserInfo}
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary"
-            style={{ backgroundColor: primary }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = secondary;
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = primary;
-            }}
-          >
+          <button onClick={fetchUserInfo} className="btn-primary">
             다시 시도
           </button>
         </div>
@@ -387,20 +377,7 @@ export default function EditProfile() {
                   <button
                     type="submit"
                     disabled={!nicknameChecked || isSubmitting || nickname.trim() === originalNickname}
-                    className="px-6 py-2 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-primary transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{
-                      backgroundColor: (!nicknameChecked || isSubmitting || nickname.trim() === originalNickname) ? '#9CA3AF' : primary,
-                    }}
-                    onMouseEnter={(e) => {
-                      if (nicknameChecked && !isSubmitting && nickname.trim() !== originalNickname) {
-                        e.target.style.backgroundColor = secondary;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (nicknameChecked && !isSubmitting && nickname.trim() !== originalNickname) {
-                        e.target.style.backgroundColor = primary;
-                      }
-                    }}
+                    className="btn-primary"
                   >
                     {isSubmitting ? '수정 중...' : '정보 수정'}
                   </button>

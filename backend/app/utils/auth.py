@@ -22,6 +22,34 @@ def get_password_hash(password: str) -> str:
     """비밀번호 해싱"""
     return pwd_context.hash(password)
 
+def create_pending_signup_token(userinfo: dict, expires_minutes: int = 10) -> str:
+    """신규 가입 대기용 JWT (이메일·이름 등). 만료 후 재로그인 필요."""
+    expire = datetime.utcnow() + timedelta(minutes=expires_minutes)
+    to_encode = {
+        "type": "pending_signup",
+        "email": userinfo.get("email", ""),
+        "name": userinfo.get("name", ""),
+        "picture": userinfo.get("picture"),
+        "exp": expire,
+    }
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def verify_pending_signup_token(token: str) -> dict:
+    """pending_signup JWT 검증 후 userinfo 반환."""
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        if payload.get("type") != "pending_signup":
+            raise HTTPException(status_code=400, detail="잘못된 토큰입니다.")
+        return {
+            "email": payload.get("email", ""),
+            "name": payload.get("name", ""),
+            "picture": payload.get("picture"),
+        }
+    except JWTError:
+        raise HTTPException(status_code=400, detail="토큰이 만료되었거나 유효하지 않습니다. Google 로그인을 다시 진행해 주세요.")
+
+
 def create_access_token(data: dict, expires_delta: timedelta = None):
     """JWT 토큰 생성"""
     to_encode = data.copy()

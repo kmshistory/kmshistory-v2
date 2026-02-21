@@ -194,13 +194,13 @@ export default function Notifications() {
           <div className="ml-auto">
             <button
               onClick={markAllRead}
-              className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 text-sm"
+              className="btn-blue"
             >
               모두 읽음 처리
             </button>
             <button
               onClick={clearAll}
-              className="ml-2 px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 text-sm"
+              className="btn-danger ml-2"
             >
               전체 삭제
             </button>

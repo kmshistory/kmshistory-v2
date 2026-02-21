@@ -187,11 +187,7 @@ export default function FAQCreate() {
             >
               취소
             </Link>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-            >
+            <button type="submit" disabled={loading} className="btn-blue">
               {loading ? '등록 중...' : '등록'}
             </button>
           </div>

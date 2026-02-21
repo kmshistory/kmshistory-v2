@@ -27,21 +27,12 @@ const ClientLayout = () => {
   const mobileMenu = clientTheme.navigation.mobileMenu;
 
   const checkLoginStatus = useCallback(async () => {
-    // 로컬스토리지에 사용자 정보가 없으면 API 호출 스킵 (이미 로그인하지 않은 상태 확실)
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
-      setIsLoggedIn(false);
-      setUser(null);
-      return;
-    }
-
-    // 로컬스토리지에 사용자 정보가 있으면 서버에서 최신 상태 확인
+    // 서버에서 로그인 상태 확인 (쿠키 기반 — 구글 로그인 후 쿠키만 있는 경우도 처리)
     try {
       const response = await apiClient.get('/auth/me');
       if (response.data && response.data.nickname) {
         setIsLoggedIn(true);
         setUser(response.data);
-        // 최신 정보를 로컬스토리지에 저장
         localStorage.setItem('user', JSON.stringify(response.data));
       } else {
         setIsLoggedIn(false);
@@ -222,7 +213,7 @@ const ClientLayout = () => {
               onMouseOver={(e) => (e.target.style.color = link.hoverColor)}
               onMouseOut={(e) => (e.target.style.color = link.color)}
             >
-              강민성 유튜브
+              유튜브
             </a>
             <a
               href="https://cafe.naver.com/kmshistory"
@@ -449,7 +440,7 @@ const ClientLayout = () => {
                 e.target.style.backgroundColor = 'transparent';
               }}
             >
-              강민성 유튜브
+              유튜브
             </a>
             <a
               href="https://cafe.naver.com/kmshistory"

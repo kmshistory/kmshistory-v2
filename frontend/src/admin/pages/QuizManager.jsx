@@ -377,7 +377,7 @@ function BundleQuestionManagerModal({
                         <button
                           type="button"
                           onClick={handleAddCheckedQuestions}
-                          className="inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                          className="btn-blue text-xs py-1.5 px-3 rounded-md disabled:bg-blue-300"
                           disabled={!checkedQuestionIds.length}
                         >
                           선택 문제 추가
@@ -473,14 +473,14 @@ function BundleQuestionManagerModal({
         <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
           <button
             type="button"
-            className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+            className="btn-outline"
             onClick={onClose}
           >
             취소
           </button>
           <button
             type="button"
-            className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+            className="btn-blue disabled:bg-blue-300"
             onClick={handleApply}
             disabled={questionOptionsLoading}
           >
@@ -637,7 +637,7 @@ function TopicManagerModal({
               </div>
               <button
                 type="submit"
-                className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                className="btn-blue w-full disabled:bg-blue-300"
                 disabled={submittingNew || !newTopic.name.trim()}
               >
                 {submittingNew ? '추가 중...' : '주제 추가'}
@@ -707,7 +707,7 @@ function TopicManagerModal({
                               </button>
                               <button
                                 type="submit"
-                                className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                                className="btn-blue text-xs py-1.5 px-3 rounded-md disabled:bg-blue-300"
                                 disabled={isProcessing || !editForm.name.trim()}
                               >
                                 {isProcessing ? '저장 중...' : '저장'}
@@ -1277,7 +1277,7 @@ function QuizFormModal({
           <div className="flex items-center justify-end gap-3 py-6">
             <button
               type="button"
-              className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+              className="btn-outline"
               onClick={onClose}
               disabled={loading}
             >
@@ -1285,7 +1285,7 @@ function QuizFormModal({
             </button>
             <button
               type="submit"
-              className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+              className="btn-blue disabled:bg-blue-300"
               disabled={loading}
             >
               {loading ? '저장 중...' : '저장'}
@@ -1509,7 +1509,7 @@ function BundleFormModal({
           <div className="flex items-center justify-end gap-3 py-6">
             <button
               type="button"
-              className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+              className="btn-outline"
               onClick={onClose}
               disabled={loading}
             >
@@ -1517,7 +1517,7 @@ function BundleFormModal({
             </button>
             <button
               type="submit"
-              className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+              className="btn-blue disabled:bg-blue-300"
               disabled={loading || questionOptionsLoading}
             >
               {loading ? '저장 중...' : '테마형 저장'}
@@ -2044,15 +2044,15 @@ export default function QuizManager() {
                   fetchTopics();
                   setTopicManagerOpen(true);
                 }}
-                className="inline-flex items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-100"
+                className="btn-green gap-2"
               >
-                <i className="fas fa-tags mr-2 text-sm" />
+                <i className="fas fa-tags" />
                 카테고리 관리
               </button>
               <button
                 type="button"
                 onClick={openCreateQuestionModal}
-                className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                className="btn-blue"
               >
                 <i className="fas fa-plus mr-2 text-sm" />새 문제 등록
               </button>
@@ -2138,7 +2138,7 @@ export default function QuizManager() {
               <div className="flex items-center gap-2">
                 <button
                   type="submit"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                  className="btn-blue"
                 >
                   검색
                 </button>
@@ -2146,7 +2146,7 @@ export default function QuizManager() {
                   <button
                     type="button"
                     onClick={handleResetQuestionFilters}
-                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+                    className="btn-outline"
                   >
                     초기화
                   </button>
@@ -2291,7 +2291,7 @@ export default function QuizManager() {
             <button
               type="button"
               onClick={openCreateBundleModal}
-              className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+              className="btn-blue"
             >
               <i className="fas fa-plus mr-2 text-sm" />새 테마형 만들기
             </button>
@@ -2332,7 +2332,7 @@ export default function QuizManager() {
               <button
                 type="button"
                 onClick={() => fetchBundles({ page: 1 })}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                className="btn-blue"
               >
                 필터 적용
               </button>
@@ -2495,7 +2495,7 @@ export default function QuizManager() {
               <button
                 type="button"
                 onClick={cancelDeleteQuestion}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+                className="btn-outline"
                 disabled={questionDeleteLoading}
               >
                 취소
@@ -2503,7 +2503,7 @@ export default function QuizManager() {
               <button
                 type="button"
                 onClick={handleDeleteQuestion}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
+                className="btn-danger disabled:bg-red-300"
                 disabled={questionDeleteLoading}
               >
                 {questionDeleteLoading ? '삭제 중...' : '삭제'}
@@ -2529,7 +2529,7 @@ export default function QuizManager() {
               <button
                 type="button"
                 onClick={cancelDeleteBundle}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+                className="btn-outline"
                 disabled={bundleDeleteLoading}
               >
                 취소
@@ -2537,7 +2537,7 @@ export default function QuizManager() {
               <button
                 type="button"
                 onClick={handleDeleteBundle}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
+                className="btn-danger disabled:bg-red-300"
                 disabled={bundleDeleteLoading}
               >
                 {bundleDeleteLoading ? '삭제 중...' : '삭제'}

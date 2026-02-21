@@ -88,7 +88,7 @@ export default function NoticeDetail() {
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <i className="fas fa-exclamation-circle text-red-600 text-2xl mb-2"></i>
           <p className="text-red-700">{error}</p>
-          <Link to="/admin/notices" className="mt-4 inline-block px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700">
+          <Link to="/admin/notices" className="btn-danger mt-4 inline-block">
             목록으로
           </Link>
         </div>
@@ -123,10 +123,7 @@ export default function NoticeDetail() {
               >
                 수정하기
               </Link>
-              <button
-                onClick={deleteNotice}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
-              >
+              <button onClick={deleteNotice} className="btn-danger">
                 삭제하기
               </button>
             </>

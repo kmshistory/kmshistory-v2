@@ -178,10 +178,10 @@ export default function AdminNotices() {
           <p className="mt-1 text-sm text-gray-500">공지사항을 관리하세요</p>
         </div>
         <div className="flex space-x-3">
-          <button onClick={() => setCategoryModalOpen(true)} className="px-4 py-2 text-sm font-medium text-gray-900 bg-yellow-400 border border-yellow-500 rounded-lg hover:bg-yellow-500">
+          <button onClick={() => setCategoryModalOpen(true)} className="btn-green">
             카테고리 관리
           </button>
-          <Link to="/admin/notices/create" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+          <Link to="/admin/notices/create" className="btn-blue">
             공지사항 등록
           </Link>
         </div>
@@ -213,11 +213,11 @@ export default function AdminNotices() {
               ))}
             </select>
           </div>
-          <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+          <button type="submit" className="btn-blue">
             검색
           </button>
           {(searchText || selectedCategory) && (
-            <button type="button" onClick={handleResetFilters} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+            <button type="button" onClick={handleResetFilters} className="btn-outline">
               초기화
             </button>
           )}
@@ -392,7 +392,7 @@ export default function AdminNotices() {
               <i className="fas fa-bell-slash text-4xl text-gray-300 mb-4"></i>
               <h3 className="text-lg font-medium text-gray-900 mb-2">공지사항이 없습니다</h3>
               <p className="text-sm text-gray-500 mb-4">새로운 공지사항을 등록해보세요.</p>
-              <Link to="/admin/notices/create" className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors duration-200">
+              <Link to="/admin/notices/create" className="btn-blue">
                 <i className="fas fa-plus mr-2"></i>
                 공지사항 등록
               </Link>
@@ -414,10 +414,10 @@ export default function AdminNotices() {
                 공지사항을 {pendingStatus?.statusText}로 변경하시겠습니까?
               </p>
               <div className="flex space-x-3">
-                <button onClick={() => setStatusModalOpen(false)} className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                <button onClick={() => setStatusModalOpen(false)} className="btn-outline flex-1">
                   취소
                 </button>
-                <button onClick={confirmStatusChange} className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">
+                <button onClick={confirmStatusChange} className="btn-blue flex-1">
                   변경
                 </button>
               </div>
@@ -465,7 +465,7 @@ function AddCategoryForm({ onCreated }) {
       <form onSubmit={submit} className="flex gap-3">
         <input value={name} onChange={(e) => setName(e.target.value)} type="text" placeholder="카테고리명" className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required />
         <input value={order} onChange={(e) => setOrder(Number(e.target.value))} type="number" placeholder="순서" min={1} className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" />
-        <button type="submit" disabled={submitting} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+        <button type="submit" disabled={submitting} className="btn-blue">
           {submitting ? '추가 중...' : '추가'}
         </button>
       </form>

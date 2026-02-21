@@ -204,7 +204,7 @@ export default function DrawSelect() {
             <button
               type="submit"
               disabled={drawing || allParticipants.length === 0}
-              className="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full sm:w-auto px-6 py-3"
             >
               <i className="fas fa-gift w-5 h-5 mr-2"></i>
               <span>{drawing ? '선정 중...' : '당첨자 선정하기'}</span>
@@ -228,10 +228,7 @@ export default function DrawSelect() {
             <i className="fas fa-users text-gray-400 text-5xl mb-4"></i>
             <h3 className="text-sm font-medium text-gray-900 mb-1">등록된 대상자가 없습니다.</h3>
             <p className="text-sm text-gray-500 mb-4">먼저 대상자를 등록해주세요.</p>
-            <Link
-              to="/admin/participants"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-secondary"
-            >
+            <Link to="/admin/participants" className="btn-primary">
               대상자 등록하러 가기
             </Link>
           </div>

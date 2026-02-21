@@ -10,7 +10,7 @@ export const clientTheme = {
     },
     footer: {
       backgroundColor: '#051326',
-      color: '#979DA6',
+      color: '#FFFFFF',
       padding: '2rem 0'
     },
     container: {

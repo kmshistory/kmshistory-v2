@@ -60,6 +60,10 @@ class Settings(BaseSettings):
     GOOGLE_DRIVE_FOLDER_ID_EXCEL: str | None = None  # 대상자 엑셀 업로드용 Google Drive 폴더
     GOOGLE_DRIVE_FOLDER_ID_NOTICE_IMAGE: str | None = None  # 공지 이미지 업로드용 Google Drive 폴더
     GOOGLE_DRIVE_FOLDER_ID_QUIZ_IMAGE: str | None = None  # 퀴즈 이미지 업로드용 Google Drive 폴더
+
+    # Naver OAuth (로그인)
+    NAVER_CLIENT_ID: str = ""
+    NAVER_CLIENT_SECRET: str = ""
     
     # 미디어/업로드 설정
     MEDIA_URL: str = "/uploads"
