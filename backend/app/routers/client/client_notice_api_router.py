@@ -7,7 +7,7 @@ from app.services.notice_service import (
     client_list_notices_service,
     client_get_notice_service,
 )
-from app.models import NoticeCategory
+from app.models import NoticeCategory, User
 
 router = APIRouter(
     prefix="/api",
@@ -42,6 +42,9 @@ async def client_notice_detail_api(
     notice_id: int, db: Session = Depends(get_db)
 ):
     n = client_get_notice_service(db, notice_id)
+    author = db.query(User).filter(User.id == n.author_id).first()
+    author_nickname = author.nickname if author else None
+    category_name = getattr(n.category, "name", None) if n.category_id else None
     return NoticeResponse(
         id=n.id,
         title=n.title,
@@ -50,8 +53,8 @@ async def client_notice_detail_api(
         publish_status=n.publish_status,
         published_at=n.published_at,
         author_id=n.author_id,
-        author_nickname=getattr(getattr(n, "author", None), "nickname", None),
-        category_name=getattr(getattr(n, "category", None), "name", None),
+        author_nickname=author_nickname,
+        category_name=category_name,
         views=n.views or 0,
         is_deleted=n.is_deleted,
         created_at=n.created_at,

@@ -16,6 +16,7 @@ from app.services.notice_service import (
     admin_upload_notice_image_service,
 )
 from app.utils.auth import get_current_user_from_cookie
+from app.models import User
 
 router = APIRouter(
     prefix="/api/admin",
@@ -46,7 +47,9 @@ async def admin_notice_detail_api(
 ):
     # 권한 체크를 위해 get 호출
     notice = admin_get_notice_service(request, db, notice_id)
-    # DTO로 수동 매핑 (service의 내부 변환기능이 private이므로 여기서 작성)
+    author = db.query(User).filter(User.id == notice.author_id).first()
+    author_nickname = author.nickname if author else None
+    category_name = getattr(notice.category, "name", None) if getattr(notice, "category", None) else None
     return NoticeResponse(
         id=notice.id,
         title=notice.title,
@@ -55,8 +58,8 @@ async def admin_notice_detail_api(
         publish_status=notice.publish_status,
         published_at=notice.published_at,
         author_id=notice.author_id,
-        author_nickname=getattr(getattr(notice, "author", None), "nickname", None),
-        category_name=getattr(getattr(notice, "category", None), "name", None),
+        author_nickname=author_nickname,
+        category_name=category_name,
         views=notice.views or 0,
         is_deleted=notice.is_deleted,
         created_at=notice.created_at,
