@@ -3,9 +3,11 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.schemas.notice_schema import NoticeResponse, NoticePageResponse, NoticeCategoryResponse
+from app.schemas.client_schemas import NoticeNeighbor, NoticeNeighborsResponse
 from app.services.notice_service import (
     client_list_notices_service,
     client_get_notice_service,
+    client_get_notice_neighbors,
 )
 from app.models import NoticeCategory, User
 
@@ -35,6 +37,31 @@ async def client_notice_list_api(
         traceback.print_exc()
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail=f"공지사항 조회 중 오류가 발생했습니다: {str(e)}")
+
+
+@router.get("/notices/{notice_id}/neighbors", response_model=NoticeNeighborsResponse)
+async def client_notice_neighbors_api(
+    notice_id: int, db: Session = Depends(get_db)
+):
+    raw = client_get_notice_neighbors(db, notice_id)
+    prev_n = raw["prev"]
+    next_n = raw["next"]
+    return NoticeNeighborsResponse(
+        prev=NoticeNeighbor(
+            id=prev_n.id,
+            title=prev_n.title,
+            published_at=prev_n.published_at,
+        )
+        if prev_n
+        else None,
+        next=NoticeNeighbor(
+            id=next_n.id,
+            title=next_n.title,
+            published_at=next_n.published_at,
+        )
+        if next_n
+        else None,
+    )
 
 
 @router.get("/notices/{notice_id}", response_model=NoticeResponse)

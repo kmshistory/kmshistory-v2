@@ -13,8 +13,8 @@ export default function Notices() {
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const limit = 10;
-  
+  const PER_PAGE = 10;
+
   // 검색 및 필터 상태
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category_id') || '');
@@ -39,7 +39,7 @@ export default function Notices() {
     try {
       const params = {
         page: currentPage,
-        limit: limit,
+        limit: PER_PAGE,
       };
       if (search) params.search = search;
       if (selectedCategory) params.category_id = selectedCategory;
@@ -104,9 +104,9 @@ export default function Notices() {
     return `${year}.${month}.${day}`;
   };
 
-  // 번호 계산
+  // 번호 계산 (가장 빨리 등록된 글이 1번이 되도록 역순)
   const getNoticeNumber = (index) => {
-    return index + 1 + (currentPage - 1) * limit;
+    return total - (currentPage - 1) * PER_PAGE - index;
   };
 
   // 페이지 정보 계산
@@ -114,8 +114,8 @@ export default function Notices() {
     if (notices.length === 0) {
       return `총 ${total}개 중 0개 표시`;
     }
-    const start = (currentPage - 1) * limit + 1;
-    const end = Math.min(currentPage * limit, total);
+    const start = (currentPage - 1) * PER_PAGE + 1;
+    const end = Math.min(currentPage * PER_PAGE, total);
     return `총 ${total}개 중 ${start}~${end}개 표시`;
   };
 

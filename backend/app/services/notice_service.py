@@ -558,6 +558,80 @@ def client_get_notice_service(db: Session, notice_id: int) -> Notice:
     return notice
 
 
+def client_get_notice_neighbors(db: Session, notice_id: int) -> Dict[str, Optional[Notice]]:
+    """
+    목록과 동일한 정렬(published_at 내림차순) 기준으로 이전글(더 최신)/다음글(더 과거) 조회.
+    공통 필터는 client_list_notices_service와 동일.
+    """
+    now_kst = datetime.now(KST)
+    current = (
+        db.query(Notice)
+        .filter(Notice.id == notice_id, Notice.is_deleted == False)
+        .first()
+    )
+    if not current:
+        return {"prev": None, "next": None}
+    if current.publish_status == "private":
+        raise HTTPException(status_code=404, detail="공지사항을 찾을 수 없습니다.")
+    if current.publish_status == "scheduled" and (
+        not current.published_at or current.published_at > now_kst
+    ):
+        raise HTTPException(status_code=404, detail="공지사항을 찾을 수 없습니다.")
+
+    current_date = current.published_at or current.created_at
+
+    base_filter = [
+        Notice.is_deleted == False,
+        Notice.publish_status != "private",
+        or_(
+            and_(Notice.publish_status == "published"),
+            and_(Notice.publish_status == "scheduled", Notice.published_at <= now_kst),
+        ),
+    ]
+
+    # 이전글: 목록에서 내 위 = 나보다 미래의 글
+    prev_notice = (
+        db.query(Notice)
+        .filter(*base_filter)
+        .filter(
+            or_(
+                func.coalesce(Notice.published_at, Notice.created_at) > current_date,
+                and_(
+                    func.coalesce(Notice.published_at, Notice.created_at) == current_date,
+                    Notice.id > current.id,
+                ),
+            )
+        )
+        .order_by(
+            func.coalesce(Notice.published_at, Notice.created_at).asc(),
+            Notice.id.asc(),
+        )
+        .first()
+    )
+
+    # 다음글: 목록에서 내 아래 = 나보다 과거의 글
+    next_notice = (
+        db.query(Notice)
+        .filter(*base_filter)
+        .filter(
+            or_(
+                func.coalesce(Notice.published_at, Notice.created_at) < current_date,
+                and_(
+                    func.coalesce(Notice.published_at, Notice.created_at) == current_date,
+                    Notice.id < current.id,
+                ),
+            )
+        )
+        .order_by(
+            func.coalesce(Notice.published_at, Notice.created_at).desc(),
+            Notice.id.desc(),
+        )
+        .first()
+    )
+
+    return {"prev": prev_notice, "next": next_notice}
+
+
 # ===== 이미지 업로드 =====
 
 async def admin_upload_notice_image_service(
