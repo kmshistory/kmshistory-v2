@@ -114,7 +114,7 @@ export default function DrawDetail() {
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <i className="fas fa-exclamation-circle text-red-600 text-2xl mb-2"></i>
           <p className="text-red-700">{error}</p>
-          <Link to="/admin/draw" className="mt-4 inline-block px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700">
+          <Link to="/admin/draw" className="btn-danger mt-4 inline-block">
             목록으로
           </Link>
         </div>

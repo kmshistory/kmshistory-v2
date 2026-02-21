@@ -463,18 +463,20 @@ export default function QuizStats() {
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">퀴즈 통계 대시보드</h1>
-            <button
-              type="button"
-              onClick={loadStats}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition"
-            >
-              <i className="fas fa-sync-alt" />
-              새로 고침
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <button
+                type="button"
+                onClick={loadStats}
+                className="btn-primary gap-2 text-base"
+              >
+                <i className="fas fa-sync-alt" />
+                새로고침
+              </button>
+              <p className="text-sm text-gray-500">
+                최근 집계 기준: {formatDateTime(stats.generated_at)} • 문제/테마형/사용자 관점에서 학습 현황을 한눈에 확인하세요.
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-gray-500">
-            최근 집계 기준: {formatDateTime(stats.generated_at)} • 문제/테마형/사용자 관점에서 학습 현황을 한눈에 확인하세요.
-          </p>
         </div>
 
         <div className="grid grid-cols-1 gap-6">

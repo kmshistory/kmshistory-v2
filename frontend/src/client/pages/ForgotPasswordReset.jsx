@@ -179,7 +179,7 @@ export default function ForgotPasswordReset() {
                 <p className="text-sm text-gray-500">비밀번호가 성공적으로 재설정되었습니다.<br />새로운 비밀번호로 로그인해주세요.</p>
               </div>
               <div className="items-center px-4 py-3">
-                <button onClick={() => { setShowSuccessModal(false); navigate('/login'); }} className="px-4 py-2 text-white text-base font-medium rounded-md w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2" style={{ backgroundColor: primary }} onMouseOver={(e) => (e.target.style.backgroundColor = secondary)} onMouseOut={(e) => (e.target.style.backgroundColor = primary)}>
+                <button onClick={() => { setShowSuccessModal(false); navigate('/login'); }} className="btn-primary w-full">
                   로그인하기
                 </button>
               </div>
@@ -200,7 +200,7 @@ export default function ForgotPasswordReset() {
                 <p className="text-sm text-gray-500">{errorMessage}</p>
               </div>
               <div className="items-center px-4 py-3">
-                <button onClick={() => setShowErrorModal(false)} className="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+                <button onClick={() => setShowErrorModal(false)} className="btn-danger w-full">
                   확인
                 </button>
               </div>

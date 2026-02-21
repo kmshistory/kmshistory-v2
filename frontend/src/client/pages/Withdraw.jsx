@@ -117,17 +117,7 @@ export default function Withdraw() {
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500 mb-4">{error}</p>
-          <button
-            onClick={fetchUserInfo}
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary"
-            style={{ backgroundColor: primary }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = secondary;
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = primary;
-            }}
-          >
+          <button onClick={fetchUserInfo} className="btn-primary">
             다시 시도
           </button>
         </div>
@@ -259,7 +249,7 @@ export default function Withdraw() {
                       type="button"
                       onClick={handleWithdrawClick}
                       disabled={!agreeChecked || isSubmitting}
-                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      className="btn-danger"
                     >
                       {isSubmitting ? '처리 중...' : '회원탈퇴 신청'}
                     </button>
@@ -304,16 +294,10 @@ export default function Withdraw() {
               
               {/* 모달 버튼 */}
               <div className="flex justify-center space-x-3 mt-6">
-                <button
-                  onClick={handleCancelWithdraw}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors duration-200"
-                >
+                <button onClick={handleCancelWithdraw} className="btn-outline">
                   취소
                 </button>
-                <button
-                  onClick={handleConfirmWithdraw}
-                  className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200"
-                >
+                <button onClick={handleConfirmWithdraw} className="btn-danger">
                   탈퇴 신청
                 </button>
               </div>
@@ -342,14 +326,7 @@ export default function Withdraw() {
                     setShowSuccessModal(false);
                     window.location.href = '/';
                   }}
-                  className="px-4 py-2 text-white text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary transition-colors duration-200"
-                  style={{ backgroundColor: primary }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = secondary;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = primary;
-                  }}
+                  className="btn-primary"
                 >
                   확인
                 </button>
@@ -372,10 +349,7 @@ export default function Withdraw() {
                 <p className="text-sm text-gray-500">{errorMessage}</p>
               </div>
               <div className="flex justify-center mt-6">
-                <button
-                  onClick={() => setShowErrorModal(false)}
-                  className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200"
-                >
+                <button onClick={() => setShowErrorModal(false)} className="btn-danger">
                   확인
                 </button>
               </div>

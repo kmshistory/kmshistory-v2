@@ -170,10 +170,7 @@ export default function DrawList() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-          <button
-            type="submit"
-            className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-          >
+          <button type="submit" className="btn-blue">
             검색
           </button>
           {searchText && (
@@ -445,7 +442,7 @@ export default function DrawList() {
                 <button
                   onClick={confirmDelete}
                   disabled={deleting}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                  className="btn-danger"
                   type="button"
                 >
                   {deleting ? '삭제 중...' : '삭제'}

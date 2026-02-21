@@ -29,16 +29,7 @@ body {
   color: #051326;
 }
 
-/* 링크 스타일 */
-a {
-  color: #061F40;
-  text-decoration: none;
-  transition: color 200ms ease-in-out;
-}
-
-a:hover {
-  color: #062540;
-}
+/* 링크 스타일은 index.css의 @layer base에서 관리 (Tailwind Layer로 버튼 hover와 분리) */
 
 /* 버튼 기본 스타일 */
 button {

@@ -153,10 +153,7 @@ export default function MyPage() {
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500 mb-4">{error}</p>
-          <button
-            onClick={fetchUserInfo}
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary"
-          >
+          <button onClick={fetchUserInfo} className="btn-primary">
             다시 시도
           </button>
         </div>
@@ -496,14 +493,7 @@ function ManageItem({ title, description, to, cta, danger }) {
         <p className="text-sm font-medium text-gray-900">{title}</p>
         <p className="text-sm text-gray-500">{description}</p>
       </div>
-      <Link
-        to={to}
-        className={`px-4 py-2 text-sm font-semibold transition ${
-          danger
-            ? 'rounded-md bg-red-600 text-white hover:bg-red-700'
-            : 'rounded-md bg-primary text-white hover:bg-secondary'
-        }`}
-      >
+      <Link to={to} className={danger ? 'btn-danger' : 'btn-primary'}>
         {cta}
       </Link>
     </div>

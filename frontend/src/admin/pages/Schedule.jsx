@@ -357,7 +357,7 @@ export default function Schedule() {
           </div>
           <button
             onClick={openCreateModal}
-            className="bg-primary hover:bg-secondary text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            className="btn-primary flex items-center space-x-2"
           >
             <i className="fas fa-plus"></i>
             <span>일정 추가</span>
@@ -405,7 +405,7 @@ export default function Schedule() {
                 </button>
                 <button
                   onClick={goToCurrentMonth}
-                  className="ml-2 px-2 py-1 text-xs bg-primary text-white rounded hover:bg-secondary"
+                  className="btn-primary ml-2 text-xs py-1"
                 >
                   이번 달
                 </button>
@@ -720,13 +720,13 @@ export default function Schedule() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                  className="btn-outline"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary transition-colors"
+                  className="btn-primary"
                 >
                   {editingEvent ? '수정' : '저장'}
                 </button>

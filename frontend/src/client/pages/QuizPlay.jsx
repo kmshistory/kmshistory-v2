@@ -647,7 +647,7 @@ export default function QuizPlay() {
       <button
         type="button"
         onClick={() => loadBundleList(1)}
-        className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        className="btn-blue"
       >
         필터 적용
       </button>
@@ -672,7 +672,7 @@ export default function QuizPlay() {
           <button
             type="button"
             onClick={() => loadBundleList(bundlePagination.page)}
-            className="mt-6 inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="btn-outline mt-6"
           >
             다시 시도
           </button>
@@ -733,7 +733,7 @@ export default function QuizPlay() {
                 <button
                   type="button"
                   onClick={() => handleSelectBundle(bundle.id)}
-                  className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="btn-blue"
                 >
                   시작하기
                 </button>
@@ -875,14 +875,14 @@ export default function QuizPlay() {
           <button
             type="button"
             onClick={handleExitBundle}
-            className="inline-flex items-center justify-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="btn-outline"
           >
             목록으로 돌아가기
           </button>
           <button
             type="button"
             onClick={handleRetryBundle}
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="btn-blue"
           >
             다시 풀기
           </button>
@@ -1065,7 +1065,7 @@ export default function QuizPlay() {
                       <button
                         type="button"
                         onClick={handleSubmit}
-                        className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+                        className="btn-blue px-6 py-2.5 disabled:bg-blue-300"
                         disabled={
                           hasSubmitted || submitting || (isMultipleChoice && !question.choices?.length)
                         }
@@ -1075,7 +1075,7 @@ export default function QuizPlay() {
                       <button
                         type="button"
                         onClick={handleNextQuestion}
-                        className="inline-flex items-center justify-center rounded-lg border border-gray-300 px-6 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        className="btn-outline px-6 py-2.5"
                       >
                         다음 문제
                       </button>
@@ -1108,7 +1108,7 @@ export default function QuizPlay() {
                         <button
                           type="button"
                           onClick={handleNextQuestion}
-                          className="inline-flex items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                          className="btn-outline"
                         >
                           다음 문제
                         </button>
@@ -1258,7 +1258,7 @@ export default function QuizPlay() {
         <button
                       type="button"
           onClick={handleSubmit}
-                      className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+                      className="btn-blue px-6 py-2.5 disabled:bg-blue-300"
                       disabled={
                         hasSubmitted || submitting || (isMultipleChoice && !question.choices?.length)
                       }
@@ -1268,7 +1268,7 @@ export default function QuizPlay() {
                     <button
                       type="button"
                       onClick={handleNextQuestion}
-                      className="inline-flex items-center justify-center rounded-lg border border-gray-300 px-6 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      className="btn-outline px-6 py-2.5"
                       disabled={loading}
                     >
                       다음 문제
@@ -1302,7 +1302,7 @@ export default function QuizPlay() {
                       <button
                         type="button"
                         onClick={handleNextQuestion}
-                        className="inline-flex items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        className="btn-outline"
                       >
                         새로운 문제 풀기
         </button>

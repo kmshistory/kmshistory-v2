@@ -465,7 +465,7 @@ export default function NoticeEdit() {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="btn-blue"
             >
               {loading ? '수정 중...' : '수정하기'}
             </button>

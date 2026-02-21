@@ -337,20 +337,7 @@ export default function ChangePassword() {
                   <button
                     type="submit"
                     disabled={isLoading || !passwordValidation.length || !passwordValidation.complexity || !passwordMatch}
-                    className="px-6 py-2 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-primary transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{
-                      backgroundColor: (isLoading || !passwordValidation.length || !passwordValidation.complexity || !passwordMatch) ? '#9CA3AF' : primary,
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isLoading && passwordValidation.length && passwordValidation.complexity && passwordMatch) {
-                        e.target.style.backgroundColor = secondary;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isLoading && passwordValidation.length && passwordValidation.complexity && passwordMatch) {
-                        e.target.style.backgroundColor = primary;
-                      }
-                    }}
+                    className="btn-primary"
                   >
                     {isLoading ? '변경 중...' : '비밀번호 변경'}
                   </button>
@@ -398,19 +385,7 @@ export default function ChangePassword() {
               </div>
               <h3 className="text-lg leading-6 font-medium text-gray-900 mb-2">{alertData.title}</h3>
               <p className="text-sm text-gray-500 mb-4 whitespace-pre-line">{alertData.message}</p>
-              <button
-                onClick={closeAlertModal}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200"
-                style={{
-                  backgroundColor: primary,
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = secondary;
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = primary;
-                }}
-              >
+              <button onClick={closeAlertModal} className="btn-primary w-full">
                 확인
               </button>
             </div>

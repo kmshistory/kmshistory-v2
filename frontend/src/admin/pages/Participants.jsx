@@ -400,7 +400,7 @@ export default function Participants() {
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="w-full lg:w-auto inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                  className="btn-primary w-full lg:w-auto"
                 >
                   <i className="fas fa-upload text-sm mr-2"></i>
                   {uploading ? '업로드 중...' : '대상자 목록에 넣기'}
@@ -440,7 +440,7 @@ export default function Participants() {
             <div className="flex-shrink-0">
               <button
                 type="submit"
-                className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-secondary hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary"
+                className="btn-outline"
               >
                 <i className="fas fa-search text-sm mr-2"></i>
                 검색
@@ -479,7 +479,7 @@ export default function Participants() {
           <div className="flex flex-col sm:flex-row gap-2">
             <button
               onClick={openAddModal}
-              className="flex-1 sm:flex-none inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="btn-primary flex-1 sm:flex-none"
             >
               <i className="fas fa-plus text-sm mr-2"></i>
               대상자 추가
@@ -487,16 +487,16 @@ export default function Participants() {
             <button
               onClick={openBulkDeleteModal}
               disabled={selectedIds.size === 0}
-              className="flex-1 sm:flex-none inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="btn-danger flex-1 sm:flex-none disabled:bg-gray-400"
             >
               <i className="fas fa-trash text-sm mr-2"></i>
               선택 삭제
             </button>
             <Link
               to="/admin/draw/select"
-              className="flex-1 sm:flex-none inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="btn-blue flex-1 sm:flex-none gap-2"
             >
-              <i className="fas fa-gift text-sm mr-2"></i>
+              <i className="fas fa-gift"></i>
               당첨자 선정하러 가기
             </Link>
           </div>
@@ -851,7 +851,7 @@ export default function Participants() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                    className="btn-primary"
                   >
                     {submitting ? '추가 중...' : '추가'}
                   </button>
@@ -911,7 +911,7 @@ export default function Participants() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                    className="btn-primary"
                   >
                     {submitting ? '수정 중...' : '수정'}
                   </button>
@@ -946,7 +946,7 @@ export default function Participants() {
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                  className="btn-danger"
                 >
                   {deleting ? '삭제 중...' : '삭제'}
                 </button>
@@ -980,7 +980,7 @@ export default function Participants() {
                 <button
                   onClick={handleBulkDelete}
                   disabled={deleting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                  className="btn-danger"
                 >
                   {deleting ? '삭제 중...' : '삭제'}
                 </button>
@@ -1010,7 +1010,7 @@ export default function Participants() {
               <p className="text-sm text-gray-500 mb-4">{messageModalContent.message}</p>
               <button
                 onClick={closeMessageModal}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="btn-primary w-full"
               >
                 확인
               </button>

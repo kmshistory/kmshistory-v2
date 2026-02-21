@@ -246,10 +246,7 @@ export default function DrawResult() {
       <div className="w-full flex items-center justify-center py-16">
         <div className="text-center">
           <p className="text-gray-500 mb-4">당첨자 정보가 없습니다.</p>
-          <Link
-            to="/admin/draw/select"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-secondary"
-          >
+          <Link to="/admin/draw/select" className="btn-primary">
             다시 선정하기
           </Link>
         </div>
@@ -377,10 +374,7 @@ export default function DrawResult() {
           <i className="fas fa-save text-lg mr-2"></i>
           저장하기
         </button>
-        <Link
-          to="/admin/draw/select"
-          className="inline-flex items-center justify-center px-4 sm:px-6 py-3 border border-transparent text-sm sm:text-base font-medium rounded-md shadow-sm text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-        >
+        <Link to="/admin/draw/select" className="btn-primary px-4 sm:px-6 py-3">
           <i className="fas fa-redo text-lg mr-2"></i>
           다시 선정하기
         </Link>
@@ -515,11 +509,7 @@ export default function DrawResult() {
                 </div>
               </div>
               <div className="flex justify-end pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => setErrorModalOpen(false)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  type="button"
-                >
+                <button onClick={() => setErrorModalOpen(false)} className="btn-danger" type="button">
                   확인
                 </button>
               </div>

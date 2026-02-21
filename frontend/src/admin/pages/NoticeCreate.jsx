@@ -289,7 +289,7 @@ export default function NoticeCreate() {
           <h1 className="text-2xl font-bold text-gray-900">공지사항 등록</h1>
           <p className="mt-1 text-sm text-gray-500">새로운 공지사항을 등록하세요</p>
         </div>
-        <Link to="/admin/notices" className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+        <Link to="/admin/notices" className="btn-outline">
           목록으로
         </Link>
       </div>
@@ -350,10 +350,10 @@ export default function NoticeCreate() {
 
           {/* Buttons */}
           <div className="flex justify-end space-x-3">
-            <Link to="/admin/notices" className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+            <Link to="/admin/notices" className="btn-outline">
               취소
             </Link>
-            <button type="submit" disabled={loading} className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+            <button type="submit" disabled={loading} className="btn-blue">
               {loading ? '작성 중...' : '작성하기'}
             </button>
           </div>

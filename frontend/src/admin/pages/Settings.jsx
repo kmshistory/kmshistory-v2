@@ -617,7 +617,7 @@ export default function Settings() {
                   <button
                     type="button"
                     onClick={() => setShowPasswordModal(true)}
-                    className="mt-1 px-4 py-2 text-sm font-medium text-white bg-secondary border border-transparent rounded-md hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-light whitespace-nowrap"
+                    className="mt-1 btn-outline whitespace-nowrap"
                   >
                     변경하기
                   </button>
@@ -628,7 +628,7 @@ export default function Settings() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                  className="btn-primary"
                 >
                   저장
                 </button>
@@ -667,7 +667,7 @@ export default function Settings() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                  className="btn-primary"
                 >
                   저장
                 </button>
@@ -706,7 +706,7 @@ export default function Settings() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                  className="btn-primary"
                 >
                   저장
                 </button>
@@ -745,7 +745,7 @@ export default function Settings() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                  className="btn-primary"
                 >
                   저장
                 </button>
@@ -784,7 +784,7 @@ export default function Settings() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                  className="btn-primary"
                 >
                   저장
                 </button>
@@ -909,7 +909,7 @@ export default function Settings() {
                   <button
                     type="submit"
                     disabled={isChangingPassword || !passwordValidation.length || !passwordValidation.complexity || !passwordMatch || !currentPasswordValid}
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                    className="btn-primary"
                   >
                     {isChangingPassword ? '변경 중...' : '변경'}
                   </button>

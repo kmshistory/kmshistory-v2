@@ -355,10 +355,7 @@ export default function Users() {
           <h1 className="text-2xl font-bold text-gray-900">회원 관리</h1>
           <p className="mt-1 text-sm text-gray-500">사용자 목록을 관리하고 정보를 수정할 수 있습니다.</p>
         </div>
-        <button
-          onClick={handleAddUser}
-          className="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200"
-        >
+        <button onClick={handleAddUser} className="btn-primary">
           <i className="fas fa-plus mr-2"></i>
           회원 추가
         </button>
@@ -740,7 +737,7 @@ export default function Users() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                    className="btn-primary"
                   >
                     {submitting ? '저장 중...' : '저장'}
                   </button>
@@ -785,7 +782,7 @@ export default function Users() {
                   <button
                     onClick={handleConfirmDelete}
                     disabled={deleting}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                    className="btn-danger"
                   >
                     {deleting ? '삭제 중...' : '삭제'}
                   </button>
@@ -888,7 +885,7 @@ export default function Users() {
                   <button
                     onClick={handleConfirmUnblock}
                     disabled={blocking}
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                    className="btn-blue"
                   >
                     {blocking ? '해제 중...' : '해제'}
                   </button>

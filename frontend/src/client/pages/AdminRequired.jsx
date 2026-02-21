@@ -23,7 +23,7 @@ export default function AdminRequired() {
           <div className="space-y-4">
             <Link
               to="/login"
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200"
+              className="btn-primary w-full relative"
             >
               <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                 <i className="fas fa-sign-in-alt text-white group-hover:text-white text-lg"></i>

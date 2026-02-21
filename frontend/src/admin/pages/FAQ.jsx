@@ -143,13 +143,13 @@ export default function AdminFAQ() {
         <div className="flex space-x-3">
           <button
             onClick={() => setCategoryModalOpen(true)}
-            className="px-4 py-2 text-sm font-medium text-gray-900 bg-yellow-400 border border-yellow-500 rounded-lg hover:bg-yellow-500"
+            className="btn-green"
           >
             카테고리 관리
           </button>
           <Link
             to="/admin/faq/new"
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+            className="btn-blue"
           >
             FAQ 등록
           </Link>
@@ -186,7 +186,7 @@ export default function AdminFAQ() {
           </div>
           <button
             type="submit"
-            className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+            className="btn-blue"
           >
             검색
           </button>
@@ -429,7 +429,7 @@ export default function AdminFAQ() {
               <p className="text-sm text-gray-500 mb-4">새로운 FAQ를 등록해보세요.</p>
               <Link
                 to="/admin/faq/new"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors duration-200"
+                className="btn-blue"
               >
                 <i className="fas fa-plus mr-2"></i>
                 FAQ 등록
@@ -499,7 +499,7 @@ function AddCategoryForm({ onCreated }) {
         <button
           type="submit"
           disabled={submitting}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          className="btn-blue"
         >
           {submitting ? '추가 중...' : '추가'}
         </button>

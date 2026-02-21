@@ -265,10 +265,7 @@ export default function ForgotPassword() {
                 <p className="text-sm text-gray-500">{errorMessage}</p>
               </div>
               <div className="items-center px-4 py-3">
-                <button
-                  onClick={() => setShowErrorModal(false)}
-                  className="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
-                >
+                <button onClick={() => setShowErrorModal(false)} className="btn-danger w-full">
                   확인
                 </button>
               </div>
