@@ -142,8 +142,7 @@ export default function Login() {
             Google로 로그인
           </a>
 
-          {/* 네이버 검수 대기 중 - 검수 완료 후 주석 해제 */}
-          {/* <a
+          <a
             href="/api/auth/naver"
             className="group relative w-full flex justify-center items-center gap-3 py-3 px-4 border text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#03A94D]/50 transition-all duration-200 shadow-sm hover:opacity-90"
             style={{
@@ -154,7 +153,7 @@ export default function Login() {
           >
             <span className="text-lg font-bold">N</span>
             네이버로 로그인
-          </a> */}
+          </a>
 
         </div>
 
