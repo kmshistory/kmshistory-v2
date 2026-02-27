@@ -8,6 +8,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 _env_file_name = os.getenv("ENV_FILE", ".env")
 ENV_FILE_PATH = os.path.join(BASE_DIR, _env_file_name)
 
+# 프론트엔드 빌드 디렉터리: 스테이징이면 dist-staging, 아니면 dist
+FRONTEND_DIST = os.path.join(
+    BASE_DIR,
+    "frontend",
+    "dist-staging" if _env_file_name == ".env.staging" else "dist",
+)
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "KMS History Renewal"
     
@@ -21,7 +28,7 @@ class Settings(BaseSettings):
     # 기존 DATABASE_URL (호환성을 위해 유지)
     DATABASE_URL: str = "postgresql+psycopg2://devuser:976431@localhost:5432/kmshistory"
     
-    FRONTEND_URL: str = "http://localhost:3004"
+    FRONTEND_URL: str = "http://localhost:8017"
     
     # JWT 인증 설정
     SECRET_KEY: str = "your-secret-key-change-this-in-production"  # 프로덕션에서는 반드시 변경!

@@ -12,7 +12,7 @@ import json
 # 프로젝트 루트 디렉토리를 Python 경로에 추가
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-def test_login(email: str, password: str, base_url: str = "http://localhost:8006"):
+def test_login(email: str, password: str, base_url: str = "http://localhost:8015"):
     """로그인 테스트"""
     print("\n" + "=" * 60)
     print("관리자 계정 로그인 테스트")
@@ -127,11 +127,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 예제:
-  # 기본 사용 (localhost:8006)
+  # 기본 사용 (localhost:8015)
   python test_admin_login.py --email admin@example.com --password Admin123!
   
   # 다른 서버 테스트
-  python test_admin_login.py --email admin@example.com --password Admin123! --url http://localhost:3004
+  python test_admin_login.py --email admin@example.com --password Admin123! --url http://localhost:8017
         """
     )
     
@@ -150,8 +150,8 @@ def main():
     parser.add_argument(
         "--url",
         type=str,
-        default="http://localhost:8006",
-        help="테스트할 서버 URL (기본값: http://localhost:8006)"
+        default="http://localhost:8015",
+        help="테스트할 서버 URL (기본값: http://localhost:8015)"
     )
     
     args = parser.parse_args()
