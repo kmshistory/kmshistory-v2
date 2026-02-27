@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from app import settings, engine, Base
+from app.config import FRONTEND_DIST
 from app.database.connection import SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -199,11 +200,11 @@ async def remove_csp_header(request: Request, call_next):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3004",  # 프론트엔드 개발 서버
-        "http://localhost:8006",  # 백엔드 서버 (직접 접속용)
-        "http://127.0.0.1:8006",  # IPv4 직접 접속용
-        "http://localhost:8009",  # 스테이징 백엔드 (직접 접속용)
-        "http://127.0.0.1:8009",  # 스테이징 IPv4 직접 접속용
+        "http://localhost:8017",  # 프론트엔드 개발 서버
+        "http://localhost:8015",  # 프로덕션 백엔드 (직접 접속용)
+        "http://127.0.0.1:8015",  # 프로덕션 IPv4 직접 접속용
+        "http://localhost:8016",  # 스테이징 백엔드 (직접 접속용)
+        "http://127.0.0.1:8016",  # 스테이징 IPv4 직접 접속용
         "https://staging.kmshistory.kr",  # 스테이징 서버
         "https://kmshistory.kr",  # 운영 서버
     ],
@@ -253,10 +254,7 @@ app.include_router(quiz_router)
 # ----------------------------
 # 정적 파일 및 SPA 라우팅 (React 앱 서빙)
 # ----------------------------
-# 프론트엔드 빌드 디렉토리 경로 계산
-# backend/app/main.py → backend/app/ → backend/ → 프로젝트 루트 → frontend/dist
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-FRONTEND_DIST = os.path.join(BASE_DIR, "frontend", "dist")
+# FRONTEND_DIST는 app.config에서 ENV_FILE에 따라 dist 또는 dist-staging으로 설정됨
 
 # 정적 파일 서빙 (전체 dist 디렉토리)
 if os.path.exists(FRONTEND_DIST):

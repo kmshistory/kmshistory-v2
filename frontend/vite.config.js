@@ -4,13 +4,13 @@ import react from '@vitejs/plugin-react'
 
 // Vite는 기본적으로 frontend/ 기준으로만 .env를 읽음. 루트(kmshistory-v2/.env)도 읽도록 상위 디렉터리에서 로드
 const rootEnv = loadEnv(process.env.MODE || 'development', path.resolve(__dirname, '..'), '')
-const BACKEND_PORT = process.env.BACKEND_PORT || process.env.VITE_BACKEND_PORT || rootEnv.BACKEND_PORT || rootEnv.VITE_BACKEND_PORT || '8006'
+const BACKEND_PORT = process.env.BACKEND_PORT || process.env.VITE_BACKEND_PORT || rootEnv.BACKEND_PORT || rootEnv.VITE_BACKEND_PORT || '8015'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3004,
+    port: 8017,
     host: '0.0.0.0',
     proxy: {
       '/api': {
@@ -21,6 +21,7 @@ export default defineConfig({
     }
   },
   build: {
+    outDir: process.env.VITE_BUILD_TARGET === 'staging' ? 'dist-staging' : 'dist',
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {

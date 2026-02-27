@@ -15,6 +15,11 @@ const koreanMessages = {
       username: "아이디",
       password: "비밀번호",
       sign_in: "로그인",
+      sign_in_error: "아이디 또는 비밀번호를 확인해 주세요.",
+    },
+    validation: {
+      ...englishMessages.ra.validation,
+      required: "필수",
     },
   },
 };
@@ -47,6 +52,7 @@ import Schedule from "./pages/Schedule";
 import Notifications from "./pages/Notifications";
 import QuizManager from "./pages/QuizManager";
 import QuizStats from "./pages/QuizStats";
+import AdminLogin from "./pages/AdminLogin";
 
 export default function AdminApp() {
   return (
@@ -55,6 +61,7 @@ export default function AdminApp() {
       authProvider={authProvider}
       dataProvider={dataProvider}
       i18nProvider={i18nProvider}
+      loginPage={AdminLogin}
       layout={(props) => (
         <AdminLayout {...props} theme={adminTheme}>
           {props.children}
